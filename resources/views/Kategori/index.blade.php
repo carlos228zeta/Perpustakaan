@@ -38,7 +38,7 @@
                                 <a href="{{ route('kategori.edit', $kat->id) }}" class="action-btn action-btn-edit" title="Edit Kategori">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('kategori.destroy', $kat->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori {{ addslashes($kat->name) }}?');" style="display: inline;">
+                                <form action="{{ route('kategori.destroy', $kat->id) }}" method="POST" onsubmit="return confirmDeleteModal(event, 'Hapus Kategori?', 'Apakah Anda yakin ingin menghapus kategori {{ addslashes($kat->name) }}?')" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-btn action-btn-delete" title="Hapus Kategori">

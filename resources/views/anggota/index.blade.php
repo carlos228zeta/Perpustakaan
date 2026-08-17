@@ -64,7 +64,7 @@
                                     <a href="{{ url('/admin/anggota/'.$u->id.'/edit') }}" class="btn btn-sm btn-light text-warning border-0 shadow-sm" style="background: #fffbeb;" title="Edit">
                                         <i class="fas fa-pen"></i>
                                     </a>
-                                    <form action="{{ url('/admin/anggota/'.$u->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus anggota ini?');">
+                                    <form action="{{ url('/admin/anggota/'.$u->id) }}" method="POST" class="d-inline" onsubmit="return confirmDeleteModal(event, 'Hapus Data Anggota?', 'Apakah Anda yakin ingin menghapus anggota ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-light text-danger border-0 shadow-sm" style="background: #fef2f2;" title="Hapus">

@@ -11,7 +11,11 @@ class ProfileController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $student = DB::table('students')->where('user_id', $user->id)->first();
+        $student = DB::table('students')
+            ->leftJoin('classes', 'students.class_id', '=', 'classes.id')
+            ->select('students.*', 'classes.name as class_name')
+            ->where('students.user_id', $user->id)
+            ->first();
         $teacher = DB::table('teachers')->where('user_id', $user->id)->first();
 
         return view('profile.index', compact('user', 'student', 'teacher'));
@@ -20,10 +24,15 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        $student = DB::table('students')->where('user_id', $user->id)->first();
+        $student = DB::table('students')
+            ->leftJoin('classes', 'students.class_id', '=', 'classes.id')
+            ->select('students.*', 'classes.name as class_name')
+            ->where('students.user_id', $user->id)
+            ->first();
         $teacher = DB::table('teachers')->where('user_id', $user->id)->first();
+        $classes = DB::table('classes')->get();
 
-        return view('profile.edit', compact('user', 'student', 'teacher'));
+        return view('profile.edit', compact('user', 'student', 'teacher', 'classes'));
     }
 
     public function update(Request $request, $id)
@@ -35,13 +44,27 @@ class ProfileController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
             'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        DB::table('users')->where('id', $user->id)->update([
+        $updateData = [
             'name' => $request->name,
             'email' => $request->email,
             'updated_at' => now(),
-        ]);
+        ];
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/avatars');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $updateData['avatar'] = 'uploads/avatars/' . $filename;
+        }
+
+        DB::table('users')->where('id', $user->id)->update($updateData);
 
         if ($request->filled('password')) {
             DB::table('users')->where('id', $user->id)->update([
@@ -50,10 +73,14 @@ class ProfileController extends Controller
         }
 
         if ($user->hasRole('student')) {
-            DB::table('students')->where('user_id', $user->id)->update([
+            $studentUpdate = [
                 'phone' => $request->phone,
                 'updated_at' => now()
-            ]);
+            ];
+            if ($request->has('class_id')) {
+                $studentUpdate['class_id'] = $request->class_id;
+            }
+            DB::table('students')->where('user_id', $user->id)->update($studentUpdate);
         } elseif ($user->hasRole('teacher')) {
             DB::table('teachers')->where('user_id', $user->id)->update([
                 'phone' => $request->phone,
@@ -61,6 +88,6 @@ class ProfileController extends Controller
             ]);
         }
 
-        return redirect()->route('profile.index')->with('success', 'Profil Anda berhasil diperbarui!');
+        return redirect()->route('profile.index')->with('success', 'Profil dan foto Anda berhasil diperbarui!');
     }
 }

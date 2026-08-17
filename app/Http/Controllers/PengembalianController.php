@@ -9,9 +9,11 @@ use Carbon\Carbon;
 
 class PengembalianController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $borrowings = DB::table('borrowings')
+        $search = $request->input('search');
+
+        $query = DB::table('borrowings')
             ->join('users', 'borrowings.user_id', '=', 'users.id')
             ->join('borrowing_items', 'borrowings.id', '=', 'borrowing_items.borrowing_id')
             ->join('book_copies', 'borrowing_items.book_copy_id', '=', 'book_copies.id')
@@ -23,11 +25,19 @@ class PengembalianController extends Controller
                 'book_copies.copy_code',
                 'book_copies.id as copy_id'
             )
-            ->whereIn('borrowings.status', ['borrowed', 'approved'])
-            ->orderBy('borrowings.due_date', 'asc')
-            ->paginate(10);
+            ->whereIn('borrowings.status', ['borrowed', 'approved']);
 
-        return view('pengembalian.index', compact('borrowings'));
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('books.title', 'like', "%{$search}%")
+                  ->orWhere('book_copies.copy_code', 'like', "%{$search}%");
+            });
+        }
+
+        $borrowings = $query->orderBy('borrowings.due_date', 'asc')->paginate(10);
+
+        return view('pengembalian.index', compact('borrowings', 'search'));
     }
 
     public function returnBook(Request $request, $id)

@@ -8,11 +8,8 @@
     <div class="card-header-tzuchi">
         <div>
             <h3 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Daftar Guru / Tenaga Pendidik</h3>
-            <div style="font-size: 0.825rem; color: var(--text-muted);">Kelola akun dan informasi pengajar sekolah.</div>
+            <div style="font-size: 0.825rem; color: var(--text-muted);">Daftar akun dan profil pengajar sekolah yang terdaftar lewat pendaftaran.</div>
         </div>
-        <a href="{{ route('guru.create') }}" class="btn-tzuchi btn-primary-tzuchi">
-            <i class="bi bi-person-plus"></i> Tambah Guru Baru
-        </a>
     </div>
 
     <!-- Search Form -->
@@ -49,7 +46,7 @@
                                 <a href="{{ route('guru.edit', $tch->id) }}" class="action-btn action-btn-edit" title="Edit Data Guru">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('guru.destroy', $tch->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data guru {{ addslashes($tch->name) }}?');" style="display: inline;">
+                                <form action="{{ route('guru.destroy', $tch->id) }}" method="POST" onsubmit="return confirmDeleteModal(event, 'Hapus Data Guru?', 'Apakah Anda yakin ingin menghapus data guru {{ addslashes($tch->name) }}?')" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-btn action-btn-delete" title="Hapus Data Guru">

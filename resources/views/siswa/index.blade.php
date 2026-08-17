@@ -15,11 +15,20 @@
         </a>
     </div>
 
-    <!-- Search Form -->
     <div style="margin-bottom: 1.25rem;">
-        <form action="{{ route('siswa.index') }}" method="GET" style="display: flex; gap: 0.5rem; max-width: 400px;">
-            <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control-tzuchi" placeholder="Cari nama, NIS, atau email...">
-            <button type="submit" class="btn-tzuchi btn-secondary-tzuchi"><i class="bi bi-search"></i></button>
+        <form action="{{ route('siswa.index') }}" method="GET" style="display: flex; gap: 0.5rem; max-width: 600px; align-items: center;">
+            <div style="flex: 1;">
+                <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control-tzuchi" placeholder="Cari nama, NIS, atau email...">
+            </div>
+            <div style="flex: 1;">
+                <select name="class_id" class="form-control-tzuchi searchable-select" onchange="this.form.submit()">
+                    <option value="">-- Semua Kelas --</option>
+                    @foreach($classes as $c)
+                        <option value="{{ $c->id }}" {{ (isset($class_id) && $class_id == $c->id) ? 'selected' : '' }}>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn-tzuchi btn-secondary-tzuchi"><i class="bi bi-search"></i> Cari</button>
         </form>
     </div>
 
@@ -48,13 +57,19 @@
                             <div style="font-size: 0.8rem; color: var(--text-muted);">{{ $stu->email }}</div>
                         </td>
                         <td><span class="badge-tzuchi badge-secondary">{{ $stu->class_name ?? 'Umum' }}</span></td>
-                        <td>{{ $stu->major ?? 'PPLG' }}</td>
+                        <td>
+                            @if(!$stu->major || $stu->major === 'Tidak Ada (Umum)')
+                                <span style="color: var(--text-muted);">-</span>
+                            @else
+                                {{ $stu->major }}
+                            @endif
+                        </td>
                         <td style="text-align: center;">
                             <div class="action-btn-group">
                                 <a href="{{ route('siswa.edit', $stu->id) }}" class="action-btn action-btn-edit" title="Edit Data Siswa">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('siswa.destroy', $stu->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data siswa {{ addslashes($stu->name) }}?');" style="display: inline;">
+                                <form action="{{ route('siswa.destroy', $stu->id) }}" method="POST" onsubmit="return confirmDeleteModal(event, 'Hapus Data Siswa?', 'Apakah Anda yakin ingin menghapus data siswa {{ addslashes($stu->name) }}?')" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-btn action-btn-delete" title="Hapus Data Siswa">
@@ -85,3 +100,64 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    .ts-control {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        padding: 0.6rem 0.85rem;
+        font-family: inherit;
+        font-size: 0.95rem;
+        box-shadow: none;
+        background-color: var(--bg-color);
+    }
+    .ts-dropdown {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        font-family: inherit;
+        font-size: 0.95rem;
+        margin-top: 4px;
+        z-index: 9999 !important;
+    }
+    .ts-dropdown .option:hover, .ts-dropdown .option.active {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+    /* Dark mode overrides */
+    [data-theme='dark'] .ts-control {
+        background-color: var(--bg-color);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+    [data-theme='dark'] .ts-dropdown {
+        background-color: var(--bg-color);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+    [data-theme='dark'] .ts-dropdown .option:hover, [data-theme='dark'] .ts-dropdown .option.active {
+        background-color: #2D3748;
+        color: var(--primary);
+    }
+    [data-theme='dark'] .ts-control input {
+        color: var(--text-main);
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.searchable-select').forEach(function(el) {
+            new TomSelect(el, {
+                create: false,
+                placeholder: "-- Pilih --",
+                dropdownParent: null
+            });
+        });
+    });
+</script>
+@endpush

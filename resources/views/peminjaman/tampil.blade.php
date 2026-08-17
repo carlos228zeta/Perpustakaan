@@ -36,7 +36,6 @@
     @if (Auth::user()->isAdmin == 1)
     <div class="container">
         <a href="/peminjaman/create" class="btn btn-info mb-3 "><i class="fa-solid fa-plus"></i> tambah</a>
-        <a href="/cetaklaporan" class="btn btn-info mb-3 mx-2"><i class="fa-solid fa-print"></i> Cetak</a>
     </div>
     <div class="col-lg-auto">
         <div class="card mb-4">

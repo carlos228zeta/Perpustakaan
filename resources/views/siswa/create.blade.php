@@ -57,16 +57,25 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     <label class="form-label">Kelas</label>
-                    <select name="class_id" class="form-control-tzuchi">
+                    <select name="class_id" id="class-select" class="form-control-tzuchi searchable-select">
                         <option value="">-- Pilih Kelas --</option>
                         @foreach($classes as $c)
-                            <option value="{{ $c->id }}" {{ old('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                            @php
+                                $isSmk = str_contains($c->name, 'PPLG') || str_contains($c->name, 'AKL') || str_contains($c->name, 'MPLB') || str_contains($c->name, 'OTKP');
+                            @endphp
+                            <option value="{{ $c->id }}" data-is-smk="{{ $isSmk ? '1' : '0' }}" {{ old('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Jurusan</label>
-                    <input type="text" name="major" value="{{ old('major', 'PPLG') }}" class="form-control-tzuchi">
+                    <label class="form-label">Jurusan SMK / Program Keahlian</label>
+                    <select name="major" id="major-select" class="form-control-tzuchi searchable-select">
+                        <option value="Tidak Ada (Umum)" {{ old('major', 'Tidak Ada (Umum)') == 'Tidak Ada (Umum)' ? 'selected' : '' }}>-- Tidak Ada (Siswa SMP/SMA) --</option>
+                        <option value="Pengembangan Perangkat Lunak & Gim (PPLG)" {{ old('major') == 'Pengembangan Perangkat Lunak & Gim (PPLG)' ? 'selected' : '' }}>PPLG - Pengembangan Perangkat Lunak & Gim</option>
+                        <option value="Akuntansi & Keuangan Lembaga (AKL)" {{ old('major') == 'Akuntansi & Keuangan Lembaga (AKL)' ? 'selected' : '' }}>AKL - Akuntansi & Keuangan Lembaga</option>
+                        <option value="Manajemen Perkantoran (MPLB)" {{ old('major') == 'Manajemen Perkantoran (MPLB)' ? 'selected' : '' }}>MPLB - Manajemen Perkantoran</option>
+                        <option value="Otomatisasi & Tata Kelola Perkantoran (OTKP)" {{ old('major') == 'Otomatisasi & Tata Kelola Perkantoran (OTKP)' ? 'selected' : '' }}>OTKP - Otomatisasi & Tata Kelola Perkantoran</option>
+                    </select>
                 </div>
             </div>
 
@@ -83,3 +92,98 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    .ts-control {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        padding: 0.6rem 0.85rem;
+        font-family: inherit;
+        font-size: 0.95rem;
+        box-shadow: none;
+        background-color: var(--bg-color);
+    }
+    .ts-dropdown {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        font-family: inherit;
+        font-size: 0.95rem;
+        /* Force dropdown downwards if it fits */
+        margin-top: 4px;
+        z-index: 9999 !important;
+    }
+    .ts-dropdown .option:hover, .ts-dropdown .option.active {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+    /* Dark mode overrides */
+    [data-theme='dark'] .ts-control {
+        background-color: var(--bg-color);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+    [data-theme='dark'] .ts-dropdown {
+        background-color: var(--bg-color);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+    [data-theme='dark'] .ts-dropdown .option:hover, [data-theme='dark'] .ts-dropdown .option.active {
+        background-color: #2D3748;
+        color: var(--primary);
+    }
+    [data-theme='dark'] .ts-control input {
+        color: var(--text-main);
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const instances = {};
+        document.querySelectorAll('.searchable-select').forEach(function(el) {
+            instances[el.id || el.name] = new TomSelect(el, {
+                create: false,
+                placeholder: "-- Pilih --",
+                dropdownParent: null
+            });
+        });
+
+        const classSelect = document.getElementById('class-select');
+        if (classSelect && instances['class-select'] && instances['major-select']) {
+            instances['class-select'].on('change', function(value) {
+                const option = classSelect.querySelector(`option[value="${value}"]`);
+                if (option) {
+                    const isSmk = option.getAttribute('data-is-smk');
+                    const className = option.text;
+                    
+                    if (isSmk === '0' || !value) {
+                        instances['major-select'].setValue('Tidak Ada (Umum)');
+                        instances['major-select'].disable();
+                    } else {
+                        instances['major-select'].enable();
+                        // Auto-select major based on class name
+                        if (className.includes('PPLG')) instances['major-select'].setValue('Pengembangan Perangkat Lunak & Gim (PPLG)');
+                        else if (className.includes('AKL')) instances['major-select'].setValue('Akuntansi & Keuangan Lembaga (AKL)');
+                        else if (className.includes('MPLB')) instances['major-select'].setValue('Manajemen Perkantoran (MPLB)');
+                        else if (className.includes('OTKP')) instances['major-select'].setValue('Otomatisasi & Tata Kelola Perkantoran (OTKP)');
+                    }
+                }
+            });
+
+            // Run once on load to set initial state
+            const initialVal = instances['class-select'].getValue();
+            if (initialVal) {
+                const option = classSelect.querySelector(`option[value="${initialVal}"]`);
+                if (option && option.getAttribute('data-is-smk') === '0') {
+                    instances['major-select'].disable();
+                }
+            }
+        }
+    });
+</script>
+@endpush

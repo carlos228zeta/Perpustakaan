@@ -11,15 +11,25 @@ class RiwayatPinjamController extends Controller
     public function index(Request $request)
     {
         $status = $request->input('status');
+        $search = $request->input('search');
 
         $query = DB::table('borrowings')
             ->join('users', 'borrowings.user_id', '=', 'users.id')
+            ->leftJoin('roles', 'users.role_id', '=', 'roles.id')
+            ->leftJoin('students', 'users.id', '=', 'students.user_id')
+            ->leftJoin('classes', 'students.class_id', '=', 'classes.id')
+            ->leftJoin('teachers', 'users.id', '=', 'teachers.user_id')
             ->join('borrowing_items', 'borrowings.id', '=', 'borrowing_items.borrowing_id')
             ->join('book_copies', 'borrowing_items.book_copy_id', '=', 'book_copies.id')
             ->join('books', 'book_copies.book_id', '=', 'books.id')
             ->select(
                 'borrowings.*',
                 'users.name as user_name',
+                'users.email as user_email',
+                'roles.name as role_name',
+                'classes.name as class_name',
+                'students.major as student_major',
+                'teachers.subject as teacher_subject',
                 'books.title as book_title',
                 'book_copies.copy_code'
             );
@@ -28,9 +38,17 @@ class RiwayatPinjamController extends Controller
             $query->where('borrowings.status', $status);
         }
 
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('books.title', 'like', "%{$search}%")
+                  ->orWhere('book_copies.copy_code', 'like', "%{$search}%");
+            });
+        }
+
         $borrowings = $query->orderBy('borrowings.created_at', 'desc')->paginate(10);
 
-        return view('peminjaman.index', compact('borrowings', 'status'));
+        return view('peminjaman.index', compact('borrowings', 'status', 'search'));
     }
 
     public function create()
@@ -148,5 +166,17 @@ class RiwayatPinjamController extends Controller
             ]);
         }
         return redirect()->route('peminjaman.index')->with('success', 'Status peminjaman berhasil diperbarui!');
+    }
+
+    public function destroy($id)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            return redirect()->back()->with('error', 'Hanya Admin yang memiliki hak akses untuk menghapus riwayat peminjaman.');
+        }
+
+        DB::table('borrowing_items')->where('borrowing_id', $id)->delete();
+        DB::table('borrowings')->where('id', $id)->delete();
+
+        return redirect()->route('peminjaman.index')->with('success', 'Riwayat transaksi peminjaman berhasil dihapus.');
     }
 }

@@ -34,9 +34,12 @@ class PublicController extends Controller
             ->limit(6)
             ->get();
 
-        // Categories with book count
+        // Categories with book count (excluding deleted books)
         $categories = DB::table('categories')
-            ->leftJoin('books', 'categories.id', '=', 'books.category_id')
+            ->leftJoin('books', function ($join) {
+                $join->on('categories.id', '=', 'books.category_id')
+                     ->whereNull('books.deleted_at');
+            })
             ->select('categories.id', 'categories.name', 'categories.slug', DB::raw('count(books.id) as total_books'))
             ->groupBy('categories.id', 'categories.name', 'categories.slug')
             ->get();

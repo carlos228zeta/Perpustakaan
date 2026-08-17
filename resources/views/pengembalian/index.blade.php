@@ -12,6 +12,17 @@
         </div>
     </div>
 
+    <!-- Search Form -->
+    <div style="margin-bottom: 1.25rem;">
+        <form action="{{ url('admin/pengembalian') }}" method="GET" style="display: flex; gap: 0.5rem; max-width: 420px;">
+            <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control-tzuchi" placeholder="Cari nama peminjam, judul buku, atau kode...">
+            <button type="submit" class="btn-tzuchi btn-secondary-tzuchi"><i class="bi bi-search"></i> Cari</button>
+            @if(!empty($search))
+                <a href="{{ url('admin/pengembalian') }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm" style="color: var(--danger);"><i class="bi bi-x-circle"></i> Reset</a>
+            @endif
+        </form>
+    </div>
+
     <div class="table-responsive">
         <table class="table-tzuchi">
             <thead>
@@ -27,8 +38,9 @@
             <tbody>
                 @forelse($borrowings as $key => $b)
                     @php
-                        $isOverdue = \Carbon\Carbon::parse($b->due_date)->isPast();
-                        $overdueDays = $isOverdue ? \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($b->due_date)) : 0;
+                        $dueDateObj = \Carbon\Carbon::parse($b->due_date);
+                        $isOverdue = \Carbon\Carbon::now()->greaterThan($dueDateObj);
+                        $overdueDays = $isOverdue ? \Carbon\Carbon::now()->diffInDays($dueDateObj) : 0;
                     @endphp
                     <tr>
                         <td>{{ $borrowings->firstItem() + $key }}</td>
@@ -37,10 +49,10 @@
                             <strong>{{ $b->book_title }}</strong>
                             <div style="font-size: 0.775rem; color: var(--text-muted);">Kode: <code>{{ $b->copy_code }}</code></div>
                         </td>
-                        <td>{{ $b->borrow_date }}</td>
+                        <td>{{ \Carbon\Carbon::parse($b->borrow_date)->format('d/m/Y') }}</td>
                         <td>
                             <strong style="{{ $isOverdue ? 'color: var(--danger);' : '' }}">
-                                {{ $b->due_date }}
+                                {{ $dueDateObj->format('d/m/Y') }}
                             </strong>
                             @if($isOverdue)
                                 <div style="font-size: 0.75rem; color: var(--danger); font-weight: 600;">
@@ -49,10 +61,10 @@
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            <form action="{{ url('admin/pengembalian/'.$b->id) }}" method="POST" onsubmit="return confirm('Proses pengembalian buku ini?');">
+                            <form action="{{ url('admin/pengembalian/'.$b->id) }}" method="POST" onsubmit="return confirmDeleteModal(event, 'Proses Pengembalian Buku?', 'Apakah Anda yakin ingin memproses pengembalian buku ini?')">
                                 @csrf
                                 <button type="submit" class="btn-tzuchi btn-primary-tzuchi btn-sm">
-                                    <i class="bi bi-box-arrow-in-left"></i> Proces Kembalikan
+                                    <i class="bi bi-box-arrow-in-left"></i> Proses Kembalikan
                                 </button>
                             </form>
                         </td>

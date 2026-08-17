@@ -11,6 +11,7 @@ class SiswaController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $class_id = $request->input('class_id');
 
         $query = DB::table('students')
             ->join('users', 'students.user_id', '=', 'users.id')
@@ -26,8 +27,14 @@ class SiswaController extends Controller
             });
         }
 
+        if ($class_id) {
+            $query->where('students.class_id', $class_id);
+        }
+
         $students = $query->orderBy('users.name', 'asc')->paginate(10);
-        return view('siswa.index', compact('students', 'search'));
+        $classes = DB::table('classes')->get();
+
+        return view('siswa.index', compact('students', 'search', 'classes', 'class_id'));
     }
 
     public function create()

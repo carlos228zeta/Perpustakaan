@@ -14,11 +14,25 @@ class DashboardController extends Controller
     public function adminDashboard()
     {
         $totalUsers = DB::table('users')->count();
-        $totalStudents = DB::table('students')->count();
-        $totalTeachers = DB::table('teachers')->count();
+        $totalStudents = DB::table('users')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->where('roles.name', 'student')
+            ->count();
+        if ($totalStudents === 0) {
+            $totalStudents = DB::table('students')->count();
+        }
+
+        $totalTeachers = DB::table('users')
+            ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->where('roles.name', 'teacher')
+            ->count();
+        if ($totalTeachers === 0) {
+            $totalTeachers = DB::table('teachers')->count();
+        }
         $totalLibrarians = DB::table('users')->where('role_id', 2)->count();
         $totalBooks = DB::table('books')->whereNull('deleted_at')->count();
         $totalCopies = DB::table('book_copies')->count();
+        $availableCopies = DB::table('book_copies')->where('status', 'available')->count();
         $activeBorrowings = DB::table('borrowings')->whereIn('status', ['borrowed', 'approved'])->count();
         $overdueBorrowings = DB::table('borrowings')
             ->whereIn('status', ['borrowed', 'approved'])
@@ -34,9 +48,18 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'totalUsers', 'totalStudents', 'totalTeachers', 'totalLibrarians',
-            'totalBooks', 'totalCopies', 'activeBorrowings', 'overdueBorrowings',
+            'totalBooks', 'totalCopies', 'availableCopies', 'activeBorrowings', 'overdueBorrowings',
             'totalFines', 'recentActivities'
         ));
+    }
+
+    /**
+     * Clear all activity logs (Admin only)
+     */
+    public function clearActivities()
+    {
+        DB::table('activity_logs')->truncate();
+        return redirect()->back()->with('success', 'Semua riwayat aktivitas sistem telah berhasil dihapus.');
     }
 
     /**

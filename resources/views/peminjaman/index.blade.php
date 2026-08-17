@@ -15,12 +15,25 @@
         </a>
     </div>
 
-    <!-- Status Filters -->
-    <div style="margin-bottom: 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-        <a href="{{ route('peminjaman.index') }}" class="btn-tzuchi {{ request('status') ? 'btn-secondary-tzuchi' : 'btn-primary-tzuchi' }} btn-sm">Semua</a>
-        <a href="{{ route('peminjaman.index', ['status' => 'pending']) }}" class="btn-tzuchi {{ request('status') === 'pending' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Menunggu Persetujuan</a>
-        <a href="{{ route('peminjaman.index', ['status' => 'borrowed']) }}" class="btn-tzuchi {{ request('status') === 'borrowed' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Dipinjam</a>
-        <a href="{{ route('peminjaman.index', ['status' => 'returned']) }}" class="btn-tzuchi {{ request('status') === 'returned' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Dikembalikan</a>
+    <!-- Search & Status Filters -->
+    <div style="margin-bottom: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+        <form action="{{ route('peminjaman.index') }}" method="GET" style="display: flex; gap: 0.5rem; flex: 1; max-width: 420px;">
+            @if(request('status'))
+                <input type="hidden" name="status" value="{{ request('status') }}">
+            @endif
+            <input type="text" name="search" value="{{ $search ?? '' }}" class="form-control-tzuchi" placeholder="Cari nama peminjam, judul buku, atau kode...">
+            <button type="submit" class="btn-tzuchi btn-secondary-tzuchi"><i class="bi bi-search"></i> Cari</button>
+            @if(!empty($search))
+                <a href="{{ route('peminjaman.index', ['status' => request('status')]) }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm" style="color: var(--danger);"><i class="bi bi-x-circle"></i></a>
+            @endif
+        </form>
+
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <a href="{{ route('peminjaman.index', ['search' => $search]) }}" class="btn-tzuchi {{ !request('status') ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Semua</a>
+            <a href="{{ route('peminjaman.index', ['status' => 'pending', 'search' => $search]) }}" class="btn-tzuchi {{ request('status') === 'pending' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Menunggu</a>
+            <a href="{{ route('peminjaman.index', ['status' => 'borrowed', 'search' => $search]) }}" class="btn-tzuchi {{ request('status') === 'borrowed' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Dipinjam</a>
+            <a href="{{ route('peminjaman.index', ['status' => 'returned', 'search' => $search]) }}" class="btn-tzuchi {{ request('status') === 'returned' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">Dikembalikan</a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -40,15 +53,28 @@
                 @forelse($borrowings as $key => $b)
                     <tr>
                         <td>{{ $borrowings->firstItem() + $key }}</td>
-                        <td><strong>{{ $b->user_name }}</strong></td>
+                        <td>
+                            <strong>{{ $b->user_name }}</strong>
+                            @if(isset($b->role_name) && $b->role_name === 'student')
+                                <div style="font-size: 0.775rem; color: var(--primary); font-weight: 600; margin-top: 0.15rem;">
+                                    <i class="bi bi-mortarboard-fill"></i> {{ $b->class_name ?? 'Siswa' }} @if(!empty($b->student_major)) • {{ $b->student_major }} @endif
+                                </div>
+                            @elseif(isset($b->role_name) && $b->role_name === 'teacher')
+                                <div style="font-size: 0.775rem; color: #D97706; font-weight: 600; margin-top: 0.15rem;">
+                                    <i class="bi bi-person-badge-fill"></i> Guru {{ !empty($b->teacher_subject) ? '('.$b->teacher_subject.')' : '' }}
+                                </div>
+                            @else
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ ucfirst($b->role_name ?? 'Anggota') }}</div>
+                            @endif
+                        </td>
                         <td>
                             <strong>{{ $b->book_title }}</strong>
                             <div style="font-size: 0.775rem; color: var(--text-muted);">Kode: <code>{{ $b->copy_code }}</code></div>
                         </td>
-                        <td>{{ $b->borrow_date }}</td>
+                        <td>{{ \Carbon\Carbon::parse($b->borrow_date)->format('d/m/Y') }}</td>
                         <td>
                             <strong style="{{ \Carbon\Carbon::parse($b->due_date)->isPast() && $b->status === 'borrowed' ? 'color: var(--danger);' : '' }}">
-                                {{ $b->due_date }}
+                                {{ \Carbon\Carbon::parse($b->due_date)->format('d/m/Y') }}
                             </strong>
                         </td>
                         <td>
@@ -63,16 +89,28 @@
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            @if($b->status === 'pending')
-                                <form action="{{ route('peminjaman.update', $b->id) }}" method="POST" style="display: inline;">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="status" value="borrowed">
-                                    <button type="submit" class="btn-tzuchi btn-primary-tzuchi btn-sm" title="Setujui">Setujui</button>
-                                </form>
-                            @else
-                                <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
-                            @endif
+                            <div style="display: flex; gap: 0.45rem; justify-content: center; align-items: center;">
+                                @if($b->status === 'pending')
+                                    <form action="{{ route('peminjaman.update', $b->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="borrowed">
+                                        <button type="submit" class="btn-tzuchi btn-primary-tzuchi btn-sm" title="Setujui">Setujui</button>
+                                    </form>
+                                @endif
+
+                                @if(auth()->user()->hasRole('admin'))
+                                    <form action="{{ route('peminjaman.destroy', $b->id) }}" method="POST" style="display: inline;" onsubmit="return confirmDeleteModal(event, 'Hapus Riwayat Peminjaman?', 'Apakah Anda yakin ingin menghapus catatan transaksi peminjaman ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn action-btn-delete" title="Hapus Riwayat Peminjaman">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @elseif($b->status !== 'pending')
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
