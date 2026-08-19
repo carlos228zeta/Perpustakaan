@@ -31,8 +31,16 @@ class DashboardController extends Controller
         }
         $totalLibrarians = DB::table('users')->where('role_id', 2)->count();
         $totalBooks = DB::table('books')->whereNull('deleted_at')->count();
-        $totalCopies = DB::table('book_copies')->count();
-        $availableCopies = DB::table('book_copies')->where('status', 'available')->count();
+        $totalCopies = DB::table('book_copies')
+            ->join('books', 'book_copies.book_id', '=', 'books.id')
+            ->whereNull('books.deleted_at')
+            ->count();
+            
+        $availableCopies = DB::table('book_copies')
+            ->join('books', 'book_copies.book_id', '=', 'books.id')
+            ->whereNull('books.deleted_at')
+            ->where('book_copies.status', 'available')
+            ->count();
         $activeBorrowings = DB::table('borrowings')->whereIn('status', ['borrowed', 'approved'])->count();
         $overdueBorrowings = DB::table('borrowings')
             ->whereIn('status', ['borrowed', 'approved'])
@@ -68,7 +76,10 @@ class DashboardController extends Controller
     public function librarianDashboard()
     {
         $totalBooks = DB::table('books')->whereNull('deleted_at')->count();
-        $totalCopies = DB::table('book_copies')->count();
+        $totalCopies = DB::table('book_copies')
+            ->join('books', 'book_copies.book_id', '=', 'books.id')
+            ->whereNull('books.deleted_at')
+            ->count();
         $totalStudents = DB::table('students')->count();
         $totalTeachers = DB::table('teachers')->count();
         $activeBorrowings = DB::table('borrowings')->whereIn('status', ['borrowed', 'approved'])->count();

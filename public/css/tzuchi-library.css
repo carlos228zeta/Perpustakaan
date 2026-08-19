@@ -310,7 +310,7 @@ a:hover {
 
 /* Active Sidebar Item Styling (Zero Blink Instant Render) */
 .sidebar-item.active a {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-secondary) 100%) !important;
+  background: var(--primary) !important;
   color: #FFFFFF !important;
   box-shadow: var(--shadow-primary);
   font-weight: 700;
@@ -967,13 +967,13 @@ a:hover {
 }
 
 .btn-primary-tzuchi {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-secondary) 100%) !important;
+  background: var(--primary) !important;
   color: #FFFFFF !important;
   box-shadow: var(--shadow-primary);
 }
 
 .btn-primary-tzuchi:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%) !important;
+  background: var(--primary-hover) !important;
   color: #FFFFFF !important;
   transform: translateY(-2px) scale(1.02);
   box-shadow: var(--shadow-primary);
@@ -994,13 +994,13 @@ a:hover {
 }
 
 .btn-danger-tzuchi {
-  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  background: var(--danger);
   color: #FFFFFF !important;
   box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
 }
 
 .btn-danger-tzuchi:hover {
-  background: linear-gradient(135deg, #B91C1C 0%, #DC2626 100%);
+  background: #B91C1C;
   color: #FFFFFF !important;
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 12px 28px -4px rgba(220, 38, 38, 0.4);
@@ -1143,7 +1143,7 @@ textarea, textarea.form-control-tzuchi {
 }
 
 .pagination li.active span, .pagination .page-item.active .page-link {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-secondary) 100%) !important;
+  background: var(--primary) !important;
   border-color: var(--primary) !important;
   color: #FFFFFF !important;
   font-weight: 800 !important;

@@ -593,7 +593,7 @@ function updateBulkBtnState() {
         bulkForm.style.display = 'none';
     }
 }
-
+ 
 function submitBulkDelete() {
     const checkedBoxes = document.querySelectorAll('.item-master-chk:checked');
     if (checkedBoxes.length === 0) return;

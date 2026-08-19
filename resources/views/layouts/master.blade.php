@@ -141,7 +141,8 @@
 
         <div class="footer-bottom">
             <div>
-                &copy; {{ date('Y') }} <strong>Sekolah Cinta Kasih Tzu Chi Cengkareng</strong>. Hak Cipta Dilindungi.
+                &copy; {{ date('Y') }} <strong>Sekolah Cinta Kasih Tzu Chi Cengkareng</strong>. Hak Cipta Dilindungi.<br>
+                Developed by <strong>Credibug Partner Solution</strong>
             </div>
             <div>
                 Library Management System v2.0

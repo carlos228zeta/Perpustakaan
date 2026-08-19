@@ -73,7 +73,9 @@
                         <a href="{{ route('kategori.index') }}"><i class="bi bi-tags-fill"></i> <span>Kategori</span></a>
                     </li>
                     <li class="sidebar-item {{ request()->is('admin/masterdata*') ? 'active' : '' }}">
-                        <a href="{{ route('masterdata.index') }}"><i class="bi bi-database-fill-gear"></i> <span>Data Master (Penulis/Rak)</span></a>
+                        <a href="{{ route('masterdata.index') }}"><i class="bi bi-database-fill-gear"></i> <span>Data Master
+                            
+                        </span></a>
                     </li>
                     <li class="sidebar-item {{ request()->is('admin/siswa*') ? 'active' : '' }}">
                         <a href="{{ route('siswa.index') }}"><i class="bi bi-people-fill"></i> <span>Data Siswa</span></a>
@@ -96,8 +98,8 @@
                     @php
                         $isSettingsActive = request()->is('admin/pengaturan*') || request()->is('admin/banner*');
                     @endphp
-                    <li class="sidebar-item has-submenu {{ $isSettingsActive ? 'open' : '' }}">
-                        <a href="{{ $isSettingsActive ? 'javascript:void(0)' : route('pengaturan.index') }}" onclick="toggleSidebarSubmenu(this)">
+                    <li class="sidebar-item has-submenu" id="settingsMenuParent">
+                        <a href="javascript:void(0)" onclick="toggleSettingsMenu()">
                             <i class="bi bi-gear-wide-connected"></i> 
                             <span>Pengaturan Sistem</span>
                             <i class="bi bi-chevron-down submenu-arrow" style="margin-left: auto; font-size: 0.8rem;"></i>
@@ -357,8 +359,32 @@
             }
         }
 
+        function toggleSettingsMenu() {
+            const parent = document.getElementById('settingsMenuParent');
+            if (parent) {
+                parent.classList.toggle('open');
+                localStorage.setItem('tzuchi_settings_open', parent.classList.contains('open') ? '1' : '0');
+            }
+        }
+
         // Sidebar scroll position persistence & auto-scroll active item into view
         document.addEventListener('DOMContentLoaded', function() {
+            const settingsParent = document.getElementById('settingsMenuParent');
+            if (settingsParent) {
+                const isSettingsActive = {{ isset($isSettingsActive) && $isSettingsActive ? 'true' : 'false' }};
+                const savedState = localStorage.getItem('tzuchi_settings_open');
+                
+                if (isSettingsActive || savedState === '1') {
+                    settingsParent.classList.add('open');
+                } else {
+                    settingsParent.classList.remove('open');
+                }
+                
+                if (isSettingsActive && savedState !== '1') {
+                    localStorage.setItem('tzuchi_settings_open', '1');
+                }
+            }
+
             const sidebarMenu = document.querySelector('.sidebar-menu');
             if (sidebarMenu) {
                 const savedPos = sessionStorage.getItem('tzuchi_sidebar_scroll');

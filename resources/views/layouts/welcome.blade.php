@@ -130,7 +130,8 @@
                 </div>
             </div>
             <div class="border-top pt-3 text-center small text-muted">
-                &copy; {{ date('Y') }} Library Management System — Cinta Kasih Tzu Chi Cengkareng. Hak Cipta Dilindungi.
+                &copy; {{ date('Y') }} Library Management System — Cinta Kasih Tzu Chi Cengkareng. Hak Cipta Dilindungi.<br>
+                Developed by <strong style="color: var(--primary);">Credibug Partner Solution</strong>
             </div>
         </div>
     </footer>
