@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('kategori', KategoriController::class);
         Route::resource('buku', BukuController::class);
         Route::resource('guru', GuruController::class);
+        Route::get('/siswa/import-template', [SiswaController::class, 'importTemplate'])->name('siswa.importTemplate');
+        Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
         Route::resource('siswa', SiswaController::class);
         Route::resource('peminjaman', RiwayatPinjamController::class);
         
@@ -87,19 +89,34 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/masterdata/author/bulk-destroy', [\App\Http\Controllers\MasterDataController::class, 'bulkDestroyAuthor'])->name('masterdata.author.bulkDestroy');
         Route::delete('/masterdata/publisher/bulk-destroy', [\App\Http\Controllers\MasterDataController::class, 'bulkDestroyPublisher'])->name('masterdata.publisher.bulkDestroy');
         Route::delete('/masterdata/shelf/bulk-destroy', [\App\Http\Controllers\MasterDataController::class, 'bulkDestroyShelf'])->name('masterdata.shelf.bulkDestroy');
+        Route::delete('/masterdata/class/bulk-destroy', [\App\Http\Controllers\MasterDataController::class, 'bulkDestroyClass'])->name('masterdata.class.bulkDestroy');
+        Route::delete('/masterdata/major/bulk-destroy', [\App\Http\Controllers\MasterDataController::class, 'bulkDestroyMajor'])->name('masterdata.major.bulkDestroy');
 
         // Single Item CRUD Routes
+        Route::get('/masterdata/author/create', [\App\Http\Controllers\MasterDataController::class, 'createAuthor'])->name('masterdata.author.create');
         Route::post('/masterdata/author', [\App\Http\Controllers\MasterDataController::class, 'storeAuthor'])->name('masterdata.author.store');
         Route::put('/masterdata/author/{id}', [\App\Http\Controllers\MasterDataController::class, 'updateAuthor'])->name('masterdata.author.update');
         Route::delete('/masterdata/author/{id}', [\App\Http\Controllers\MasterDataController::class, 'destroyAuthor'])->name('masterdata.author.destroy');
 
+        Route::get('/masterdata/publisher/create', [\App\Http\Controllers\MasterDataController::class, 'createPublisher'])->name('masterdata.publisher.create');
         Route::post('/masterdata/publisher', [\App\Http\Controllers\MasterDataController::class, 'storePublisher'])->name('masterdata.publisher.store');
         Route::put('/masterdata/publisher/{id}', [\App\Http\Controllers\MasterDataController::class, 'updatePublisher'])->name('masterdata.publisher.update');
         Route::delete('/masterdata/publisher/{id}', [\App\Http\Controllers\MasterDataController::class, 'destroyPublisher'])->name('masterdata.publisher.destroy');
 
+        Route::get('/masterdata/shelf/create', [\App\Http\Controllers\MasterDataController::class, 'createShelf'])->name('masterdata.shelf.create');
         Route::post('/masterdata/shelf', [\App\Http\Controllers\MasterDataController::class, 'storeShelf'])->name('masterdata.shelf.store');
         Route::put('/masterdata/shelf/{id}', [\App\Http\Controllers\MasterDataController::class, 'updateShelf'])->name('masterdata.shelf.update');
         Route::delete('/masterdata/shelf/{id}', [\App\Http\Controllers\MasterDataController::class, 'destroyShelf'])->name('masterdata.shelf.destroy');
+
+        Route::get('/masterdata/class/create', [\App\Http\Controllers\MasterDataController::class, 'createClass'])->name('masterdata.class.create');
+        Route::post('/masterdata/class', [\App\Http\Controllers\MasterDataController::class, 'storeClass'])->name('masterdata.class.store');
+        Route::put('/masterdata/class/{id}', [\App\Http\Controllers\MasterDataController::class, 'updateClass'])->name('masterdata.class.update');
+        Route::delete('/masterdata/class/{id}', [\App\Http\Controllers\MasterDataController::class, 'destroyClass'])->name('masterdata.class.destroy');
+
+        Route::get('/masterdata/major/create', [\App\Http\Controllers\MasterDataController::class, 'createMajor'])->name('masterdata.major.create');
+        Route::post('/masterdata/major', [\App\Http\Controllers\MasterDataController::class, 'storeMajor'])->name('masterdata.major.store');
+        Route::put('/masterdata/major/{id}', [\App\Http\Controllers\MasterDataController::class, 'updateMajor'])->name('masterdata.major.update');
+        Route::delete('/masterdata/major/{id}', [\App\Http\Controllers\MasterDataController::class, 'destroyMajor'])->name('masterdata.major.destroy');
 
         // AJAX Quick Store Endpoints for Book Forms
         Route::post('/quick-category', [BukuController::class, 'ajaxStoreCategory'])->name('categories.quickStore');

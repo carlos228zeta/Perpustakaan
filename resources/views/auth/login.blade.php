@@ -37,6 +37,7 @@
     $customLogo = \App\Models\LibrarySetting::get('institution_logo');
     $logoSrc = ($customLogo && file_exists(public_path($customLogo))) ? asset($customLogo) : asset('img/logo.png');
     $initialMode = isset($isRegister) && $isRegister ? 'show-signup' : 'show-login';
+    $classes = \Illuminate\Support\Facades\DB::table('classes')->get();
 @endphp
 
 
@@ -121,13 +122,24 @@
 
                 <form method="POST" action="{{ route('register') }}" class="auth-submit-form">
                     @csrf
-                    <div class="form-group" style="margin-bottom: 0.75rem;">
-                        <label for="role_type" class="form-label required" style="font-size: 0.8rem; font-weight: 700;">Daftar Sebagai</label>
-                        <select id="role_type" class="form-control-tzuchi @error('role_type') is-invalid @enderror" name="role_type" required onchange="updateNumberIdLabel()">
-                            <option value="student" {{ old('role_type') == 'student' ? 'selected' : '' }}>Siswa / Murid</option>
-                            <option value="teacher" {{ old('role_type') == 'teacher' ? 'selected' : '' }}>Guru / Tenaga Pendidik</option>
-                            <option value="librarian" {{ old('role_type') == 'librarian' ? 'selected' : '' }}>Petugas Perpustakaan</option>
-                        </select>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="role_type" class="form-label required" style="font-size: 0.8rem; font-weight: 700;">Daftar Sebagai</label>
+                            <select id="role_type" class="form-control-tzuchi @error('role_type') is-invalid @enderror" name="role_type" required onchange="updateNumberIdLabel()">
+                                <option value="student" {{ old('role_type') == 'student' ? 'selected' : '' }}>Siswa / Murid</option>
+                                <option value="teacher" {{ old('role_type') == 'teacher' ? 'selected' : '' }}>Guru / Tenaga Pendidik</option>
+                                <option value="librarian" {{ old('role_type') == 'librarian' ? 'selected' : '' }}>Petugas Perpustakaan</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="class_container" style="margin-bottom: 0; display: {{ old('role_type', 'student') == 'student' ? 'block' : 'none' }};">
+                            <label for="class_id" class="form-label required" style="font-size: 0.8rem; font-weight: 700;">Pilih Kelas</label>
+                            <select id="class_id" class="form-control-tzuchi @error('class_id') is-invalid @enderror" name="class_id">
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach($classes as $c)
+                                    <option value="{{ $c->id }}" {{ old('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0.75rem;">
@@ -245,19 +257,32 @@ function updateNumberIdLabel() {
     const roleSelect = document.getElementById('role_type');
     const label = document.getElementById('number_id_label');
     const input = document.getElementById('number_id');
+    const classContainer = document.getElementById('class_container');
+    const classInput = document.getElementById('class_id');
+    
     if (!roleSelect || !label || !input) return;
 
     if (roleSelect.value === 'teacher') {
         label.innerText = 'NIP (Nomor Induk Pegawai)';
         input.placeholder = 'NIP Guru';
+        if (classContainer) classContainer.style.display = 'none';
+        if (classInput) classInput.required = false;
     } else if (roleSelect.value === 'librarian') {
         label.innerText = 'ID Petugas';
         input.placeholder = 'Kode Petugas';
+        if (classContainer) classContainer.style.display = 'none';
+        if (classInput) classInput.required = false;
     } else {
         label.innerText = 'NIS (Nomor Induk Siswa)';
         input.placeholder = 'NIS Siswa';
+        if (classContainer) classContainer.style.display = 'block';
+        if (classInput) classInput.required = true;
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateNumberIdLabel();
+});
 
 function toggleAuthCard(mode) {
     const card = document.getElementById('authCardBox');

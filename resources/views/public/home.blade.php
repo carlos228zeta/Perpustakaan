@@ -146,7 +146,7 @@
 .hero-slider-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.35) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
   z-index: 2;
 }
 
@@ -176,19 +176,19 @@
   margin-bottom: 1rem;
   color: #FFFFFF !important;
   line-height: 1.2;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5);
   letter-spacing: -0.01em;
 }
 
 .hero-subtitle {
   font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   margin-bottom: 2.25rem;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8), 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .hero-search-form {

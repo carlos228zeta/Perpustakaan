@@ -22,17 +22,25 @@
             </form>
 
             @if($tab === 'penulis')
-                <button onclick="openModal('addAuthorModal')" class="btn-tzuchi btn-primary-tzuchi">
+                <a href="{{ route('masterdata.author.create') }}" class="btn-tzuchi btn-primary-tzuchi">
                     <i class="bi bi-plus-lg"></i> Tambah Penulis
-                </button>
+                </a>
             @elseif($tab === 'penerbit')
-                <button onclick="openModal('addPublisherModal')" class="btn-tzuchi btn-primary-tzuchi">
+                <a href="{{ route('masterdata.publisher.create') }}" class="btn-tzuchi btn-primary-tzuchi">
                     <i class="bi bi-plus-lg"></i> Tambah Penerbit
-                </button>
+                </a>
             @elseif($tab === 'rak')
-                <button onclick="openModal('addShelfModal')" class="btn-tzuchi btn-primary-tzuchi">
+                <a href="{{ route('masterdata.shelf.create') }}" class="btn-tzuchi btn-primary-tzuchi">
                     <i class="bi bi-plus-lg"></i> Tambah Lokasi Rak
-                </button>
+                </a>
+            @elseif($tab === 'kelas')
+                <a href="{{ route('masterdata.class.create') }}" class="btn-tzuchi btn-primary-tzuchi">
+                    <i class="bi bi-plus-lg"></i> Tambah Kelas
+                </a>
+            @elseif($tab === 'jurusan')
+                <a href="{{ route('masterdata.major.create') }}" class="btn-tzuchi btn-primary-tzuchi">
+                    <i class="bi bi-plus-lg"></i> Tambah Jurusan
+                </a>
             @endif
         </div>
     </div>
@@ -47,6 +55,12 @@
         </a>
         <a href="{{ route('masterdata.index', ['tab' => 'rak']) }}" class="btn-tzuchi {{ $tab === 'rak' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">
             <i class="bi bi-archive"></i> Lokasi Rak Buku
+        </a>
+        <a href="{{ route('masterdata.index', ['tab' => 'kelas']) }}" class="btn-tzuchi {{ $tab === 'kelas' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">
+            <i class="bi bi-door-open"></i> Kelas
+        </a>
+        <a href="{{ route('masterdata.index', ['tab' => 'jurusan']) }}" class="btn-tzuchi {{ $tab === 'jurusan' ? 'btn-primary-tzuchi' : 'btn-secondary-tzuchi' }} btn-sm">
+            <i class="bi bi-diagram-3"></i> Jurusan
         </a>
         <a href="{{ route('kategori.index') }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm" style="margin-left: auto;">
             <i class="bi bi-tags"></i> Ke Kategori Buku
@@ -203,6 +217,98 @@
                     {{ $shelves->appends(['tab' => $tab, 'search' => $search])->links() }}
                 </div>
             @endif
+
+        @elseif($tab === 'kelas')
+            <table class="table-tzuchi">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllMaster" onclick="toggleSelectAllMaster(this)" title="Pilih Semua">
+                        </th>
+                        <th style="width: 60px;">NO</th>
+                        <th>NAMA KELAS</th>
+                        <th style="width: 150px; text-align: center;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($classes as $key => $cls)
+                        <tr>
+                            <td style="text-align: center;">
+                                <input type="checkbox" class="item-master-chk" value="{{ $cls->id }}" onchange="updateBulkBtnState()">
+                            </td>
+                            <td>{{ $classes->firstItem() + $key }}</td>
+                            <td style="font-weight: 700;">{{ $cls->name }}</td>
+                            <td style="text-align: center;">
+                                <div class="action-btn-group">
+                                    <button onclick="editClass({{ $cls->id }}, '{{ addslashes($cls->name) }}')" class="action-btn action-btn-edit" title="Edit Data">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form action="{{ route('masterdata.class.destroy', $cls->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDeleteModal(event, 'Hapus Data Kelas?', 'Apakah Anda yakin ingin menghapus data kelas {{ addslashes($cls->name) }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn action-btn-delete" title="Hapus Data">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="text-center py-4" style="color: var(--text-muted);">Belum ada data kelas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @if($classes->hasPages())
+                <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border-color);">
+                    {{ $classes->appends(['tab' => $tab, 'search' => $search])->links() }}
+                </div>
+            @endif
+
+        @elseif($tab === 'jurusan')
+            <table class="table-tzuchi">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllMaster" onclick="toggleSelectAllMaster(this)" title="Pilih Semua">
+                        </th>
+                        <th style="width: 60px;">NO</th>
+                        <th>NAMA JURUSAN / KONSENTRASI KEAHLIAN</th>
+                        <th style="width: 150px; text-align: center;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($majors as $key => $major)
+                        <tr>
+                            <td style="text-align: center;">
+                                <input type="checkbox" class="item-master-chk" value="{{ $major->id }}" onchange="updateBulkBtnState()">
+                            </td>
+                            <td>{{ $majors->firstItem() + $key }}</td>
+                            <td style="font-weight: 700;">{{ $major->name }}</td>
+                            <td style="text-align: center;">
+                                <div class="action-btn-group">
+                                    <button onclick="editMajor({{ $major->id }}, '{{ addslashes($major->name) }}')" class="action-btn action-btn-edit" title="Edit Data">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <form action="{{ route('masterdata.major.destroy', $major->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDeleteModal(event, 'Hapus Data Jurusan?', 'Apakah Anda yakin ingin menghapus jurusan {{ addslashes($major->name) }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn action-btn-delete" title="Hapus Data">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="text-center py-4" style="color: var(--text-muted);">Belum ada data jurusan.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @if($majors->hasPages())
+                <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--border-color);">
+                    {{ $majors->appends(['tab' => $tab, 'search' => $search])->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>
@@ -356,6 +462,77 @@
     </div>
 </div>
 
+<!-- Modal Add Class -->
+<div class="modal-tzuchi-backdrop" id="addClassModal" style="display:none;">
+    <div class="modal-tzuchi-dialog">
+        <div class="modal-tzuchi-header">
+            <h3 class="modal-tzuchi-title">Tambah Data Kelas Baru</h3>
+            <button class="modal-tzuchi-close" onclick="closeModal('addClassModal')">&times;</button>
+        </div>
+        <form action="{{ route('masterdata.class.store') }}" method="POST">
+            @csrf
+            <div class="modal-tzuchi-body">
+                <div class="form-group">
+                    <label class="form-label required">Nama Kelas</label>
+                    <input type="text" name="name" class="form-control-tzuchi" required placeholder="Contoh: 10 RPL 1">
+                </div>
+            </div>
+            <div class="modal-tzuchi-footer">
+                <button type="button" onclick="closeModal('addClassModal')" class="btn-tzuchi btn-secondary-tzuchi">Batal</button>
+                <button type="submit" class="btn-tzuchi btn-primary-tzuchi">Simpan Kelas</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Class -->
+<div class="modal-tzuchi-backdrop" id="editClassModal" style="display:none;">
+    <div class="modal-tzuchi-dialog">
+        <div class="modal-tzuchi-header">
+            <h3 class="modal-tzuchi-title">Edit Data Kelas</h3>
+            <button class="modal-tzuchi-close" onclick="closeModal('editClassModal')">&times;</button>
+        </div>
+        <form id="editClassForm" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="modal-tzuchi-body">
+                <div class="form-group">
+                    <label class="form-label required">Nama Kelas</label>
+                    <input type="text" name="name" id="editClassName" class="form-control-tzuchi" required>
+                </div>
+            </div>
+            <div class="modal-tzuchi-footer">
+                <button type="button" onclick="closeModal('editClassModal')" class="btn-tzuchi btn-secondary-tzuchi">Batal</button>
+                <button type="submit" class="btn-tzuchi btn-primary-tzuchi">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit Major -->
+<div class="modal-tzuchi-backdrop" id="editMajorModal" style="display:none;">
+    <div class="modal-tzuchi-dialog">
+        <div class="modal-tzuchi-header">
+            <h3 class="modal-tzuchi-title">Edit Data Jurusan</h3>
+            <button class="modal-tzuchi-close" onclick="closeModal('editMajorModal')">&times;</button>
+        </div>
+        <form id="editMajorForm" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="modal-tzuchi-body">
+                <div class="form-group">
+                    <label class="form-label required">Nama Jurusan</label>
+                    <input type="text" name="name" id="editMajorName" class="form-control-tzuchi" required>
+                </div>
+            </div>
+            <div class="modal-tzuchi-footer">
+                <button type="button" onclick="closeModal('editMajorModal')" class="btn-tzuchi btn-secondary-tzuchi">Batal</button>
+                <button type="submit" class="btn-tzuchi btn-primary-tzuchi">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 const currentTab = "{{ $tab }}";
 
@@ -384,6 +561,18 @@ function editShelf(id, code, name) {
     document.getElementById('editShelfCode').value = code;
     document.getElementById('editShelfName').value = name;
     openModal('editShelfModal');
+}
+
+function editClass(id, name) {
+    document.getElementById('editClassForm').action = '/admin/masterdata/class/' + id;
+    document.getElementById('editClassName').value = name;
+    openModal('editClassModal');
+}
+
+function editMajor(id, name) {
+    document.getElementById('editMajorForm').action = '/admin/masterdata/major/' + id;
+    document.getElementById('editMajorName').value = name;
+    openModal('editMajorModal');
 }
 
 function toggleSelectAllMaster(masterChk) {
@@ -432,6 +621,12 @@ function submitBulkDelete() {
     } else if (currentTab === 'rak') {
         actionUrl = "{{ route('masterdata.shelf.bulkDestroy') }}";
         tabLabel = 'Lokasi Rak';
+    } else if (currentTab === 'kelas') {
+        actionUrl = "{{ route('masterdata.class.bulkDestroy') }}";
+        tabLabel = 'Kelas';
+    } else if (currentTab === 'jurusan') {
+        actionUrl = "{{ route('masterdata.major.bulkDestroy') }}";
+        tabLabel = 'Jurusan';
     }
     form.action = actionUrl;
 

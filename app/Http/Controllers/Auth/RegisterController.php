@@ -31,6 +31,7 @@ class RegisterController extends Controller
             'role_type' => ['required', 'in:student,teacher,librarian'],
             'number_id' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'class_id' => ['nullable', 'exists:classes,id'],
         ]);
     }
 
@@ -51,8 +52,10 @@ class RegisterController extends Controller
             DB::table('students')->insert([
                 'user_id' => $user->id,
                 'nis' => $data['number_id'] ?? rand(100000, 999999),
+                'class_id' => $data['class_id'] ?? null,
                 'phone' => $data['phone'] ?? null,
-                'major' => 'PPLG',
+                'major' => 'Tidak Ada (Umum)',
+                'enrollment_year' => date('Y'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

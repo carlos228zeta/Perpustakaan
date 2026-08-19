@@ -57,14 +57,14 @@
                 <strong style="color: var(--primary);"><i class="bi bi-check-circle-fill"></i> Aktif</strong>
             </div>
 
-            @if($student)
+            @if($user->hasRole('student'))
                 <div style="background: var(--bg-color); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <span style="color: var(--text-muted); display: block; font-size: 0.775rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Kelas Siswa</span>
                     <strong style="color: var(--primary); font-size: 1.05rem;"><i class="bi bi-mortarboard-fill me-1"></i> {{ $student->class_name ?? 'Belum Diatur' }}</strong>
                 </div>
                 <div style="background: var(--bg-color); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <span style="color: var(--text-muted); display: block; font-size: 0.775rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Nomor Induk Siswa (NIS)</span>
-                    <code>{{ $student->nis }}</code>
+                    <code>{{ $student->nis ?? '-' }}</code>
                 </div>
                 <div style="background: var(--bg-color); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <span style="color: var(--text-muted); display: block; font-size: 0.775rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Konsentrasi Keahlian / Jurusan</span>
@@ -74,7 +74,7 @@
                     <span style="color: var(--text-muted); display: block; font-size: 0.775rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Nomor Telepon / WhatsApp</span>
                     <strong style="color: var(--text-main);">{{ $student->phone ?? '-' }}</strong>
                 </div>
-            @elseif($teacher)
+            @elseif($user->hasRole('teacher'))
                 <div style="background: var(--bg-color); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <span style="color: var(--text-muted); display: block; font-size: 0.775rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Nomor Induk Pegawai (NIP)</span>
                     <code>{{ $teacher->nip ?? '-' }}</code>

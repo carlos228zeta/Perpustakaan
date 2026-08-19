@@ -31,8 +31,9 @@ class ProfileController extends Controller
             ->first();
         $teacher = DB::table('teachers')->where('user_id', $user->id)->first();
         $classes = DB::table('classes')->get();
+        $majors = DB::table('majors')->orderBy('name')->get();
 
-        return view('profile.edit', compact('user', 'student', 'teacher', 'classes'));
+        return view('profile.edit', compact('user', 'student', 'teacher', 'classes', 'majors'));
     }
 
     public function update(Request $request, $id)
@@ -74,13 +75,26 @@ class ProfileController extends Controller
 
         if ($user->hasRole('student')) {
             $studentUpdate = [
+                'user_id' => $user->id,
                 'phone' => $request->phone,
                 'updated_at' => now()
             ];
             if ($request->has('class_id')) {
                 $studentUpdate['class_id'] = $request->class_id;
             }
-            DB::table('students')->where('user_id', $user->id)->update($studentUpdate);
+            if ($request->has('major')) {
+                $studentUpdate['major'] = $request->major;
+            }
+            
+            $existingStudent = DB::table('students')->where('user_id', $user->id)->first();
+            if ($existingStudent) {
+                DB::table('students')->where('user_id', $user->id)->update($studentUpdate);
+            } else {
+                $studentUpdate['nis'] = 'NIS-' . $user->id . '-' . rand(1000, 9999);
+                $studentUpdate['enrollment_year'] = date('Y');
+                $studentUpdate['created_at'] = now();
+                DB::table('students')->insert($studentUpdate);
+            }
         } elseif ($user->hasRole('teacher')) {
             DB::table('teachers')->where('user_id', $user->id)->update([
                 'phone' => $request->phone,

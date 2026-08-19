@@ -40,7 +40,8 @@ class SiswaController extends Controller
     public function create()
     {
         $classes = DB::table('classes')->get();
-        return view('siswa.create', compact('classes'));
+        $majors = DB::table('majors')->orderBy('name')->get();
+        return view('siswa.create', compact('classes', 'majors'));
     }
 
     public function store(Request $request)
@@ -96,7 +97,9 @@ class SiswaController extends Controller
         }
 
         $classes = DB::table('classes')->get();
-        return view('siswa.edit', compact('student', 'classes'));
+        $majors = DB::table('majors')->orderBy('name')->get();
+
+        return view('siswa.edit', compact('student', 'classes', 'majors'));
     }
 
     public function update(Request $request, $id)
@@ -146,5 +149,114 @@ class SiswaController extends Controller
             DB::table('students')->where('id', $id)->delete();
         }
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil dihapus!');
+    }
+
+    public function importTemplate()
+    {
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=template_import_siswa.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = ['Nama', 'Email', 'Password', 'NIS', 'NISN', 'ID_Kelas', 'Jurusan', 'No_HP'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            
+            // Explicitly set delimiter to semicolon for Indonesian Excel locale
+            fputcsv($file, $columns, ';');
+            
+            // Example row
+            fputcsv($file, ['Budi Santoso', 'budi@siswa.com', 'password123', '1001', '0012345678', '1', 'PPLG', '08123456789'], ';');
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt'
+        ]);
+
+        $file = $request->file('csv_file');
+        $path = $file->getRealPath();
+        
+        // Read file and parse CSV, supporting both comma and semicolon
+        $content = file_get_contents($path);
+        $delimiter = strpos($content, ';') !== false ? ';' : ',';
+        
+        $data = array_map(function($line) use ($delimiter) {
+            return str_getcsv($line, $delimiter);
+        }, file($path));
+        
+        // Remove header row
+        $header = array_shift($data);
+        
+        // Simple validation to ensure columns match (at least 8 columns)
+        if (count($header) < 8) {
+            return redirect()->back()->with('error', 'Format file CSV tidak sesuai dengan template. Pastikan ada 8 kolom (Nama, Email, dll).');
+        }
+
+        $studentRoleId = DB::table('roles')->where('name', 'student')->value('id');
+        
+        DB::beginTransaction();
+        try {
+            $count = 0;
+            foreach ($data as $row) {
+                // Skip empty rows
+                if (empty(trim($row[0]))) continue;
+                
+                $nama = trim($row[0]);
+                $email = trim($row[1]);
+                $password = trim($row[2]) ?: 'cintakasih123';
+                $nis = trim($row[3]);
+                $nisn = trim($row[4] ?? '');
+                $id_kelas = trim($row[5] ?? '');
+                $jurusan = trim($row[6] ?? '') ?: 'Umum';
+                $no_hp = trim($row[7] ?? '');
+
+                // Check if email or nis already exists
+                $existingUser = DB::table('users')->where('email', $email)->exists();
+                $existingStudent = DB::table('students')->where('nis', $nis)->exists();
+                
+                if ($existingUser || $existingStudent) {
+                    continue; // Skip existing data
+                }
+
+                $userId = DB::table('users')->insertGetId([
+                    'name' => $nama,
+                    'email' => $email,
+                    'password' => Hash::make($password),
+                    'role_id' => $studentRoleId,
+                    'status' => 'active',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('students')->insert([
+                    'user_id' => $userId,
+                    'nis' => $nis,
+                    'nisn' => $nisn,
+                    'class_id' => is_numeric($id_kelas) ? $id_kelas : null,
+                    'major' => $jurusan,
+                    'phone' => $no_hp,
+                    'enrollment_year' => date('Y'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
+                $count++;
+            }
+            DB::commit();
+            return redirect()->route('siswa.index')->with('success', "Berhasil mengimpor $count data siswa baru!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+        }
     }
 }

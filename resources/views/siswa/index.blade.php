@@ -10,9 +10,14 @@
             <h3 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Daftar Siswa Perpustakaan</h3>
             <div style="font-size: 0.825rem; color: var(--text-muted);">Kelola akun dan profil siswa Cinta Kasih Tzu Chi.</div>
         </div>
-        <a href="{{ route('siswa.create') }}" class="btn-tzuchi btn-primary-tzuchi">
-            <i class="bi bi-person-plus"></i> Tambah Siswa Baru
-        </a>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="button" onclick="openImportModal()" class="btn-tzuchi btn-secondary-tzuchi">
+                <i class="bi bi-file-earmark-arrow-up"></i> Import CSV
+            </button>
+            <a href="{{ route('siswa.create') }}" class="btn-tzuchi btn-primary-tzuchi">
+                <i class="bi bi-person-plus"></i> Tambah Siswa Baru
+            </a>
+        </div>
     </div>
 
     <div style="margin-bottom: 1.25rem;">
@@ -99,6 +104,36 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Import Siswa -->
+<div class="modal-tzuchi-backdrop" id="importModal" style="display:none;">
+    <div class="modal-tzuchi-dialog">
+        <div class="modal-tzuchi-header">
+            <h3 class="modal-tzuchi-title">Import Data Siswa via CSV</h3>
+            <button type="button" class="modal-tzuchi-close" onclick="closeImportModal()">&times;</button>
+        </div>
+        <form action="{{ route('siswa.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="modal-tzuchi-body">
+                <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-color); border-radius: var(--radius-md); font-size: 0.85rem; border: 1px dashed var(--border-color); color: var(--text-main); line-height: 1.6;">
+                    <strong>Panduan Import:</strong><br>
+                    1. Unduh <a href="{{ route('siswa.importTemplate') }}" style="color: var(--primary); font-weight: bold; text-decoration: underline;">Template CSV ini</a>.<br>
+                    2. Isi data siswa sesuai format pada kolom-kolom yang tersedia.<br>
+                    3. Simpan file dalam format <code>.csv</code> dan unggah di bawah ini.<br>
+                    <span style="color: var(--text-muted); font-size: 0.8rem;">*Untuk <strong>ID_Kelas</strong>, masukkan ID angka kelas (kosongkan jika belum ada).</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Unggah File CSV</label>
+                    <input type="file" name="csv_file" class="form-control-tzuchi" accept=".csv" required style="padding: 0.5rem;">
+                </div>
+            </div>
+            <div class="modal-tzuchi-footer">
+                <button type="button" onclick="closeImportModal()" class="btn-tzuchi btn-secondary-tzuchi">Batal</button>
+                <button type="submit" class="btn-tzuchi btn-primary-tzuchi"><i class="bi bi-upload"></i> Mulai Import</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @push('styles')
@@ -159,5 +194,13 @@
             });
         });
     });
+
+    function openImportModal() {
+        document.getElementById('importModal').style.display = 'flex';
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').style.display = 'none';
+    }
 </script>
 @endpush

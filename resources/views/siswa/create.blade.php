@@ -61,20 +61,20 @@
                         <option value="">-- Pilih Kelas --</option>
                         @foreach($classes as $c)
                             @php
-                                $isSmk = str_contains($c->name, 'PPLG') || str_contains($c->name, 'AKL') || str_contains($c->name, 'MPLB') || str_contains($c->name, 'OTKP');
+                                $cName = strtolower($c->name);
+                                $isSmaSmk = str_contains($cName, 'sma') || str_contains($cName, 'smk') || preg_match('/\b(x|xi|xii)\b/i', $cName);
                             @endphp
-                            <option value="{{ $c->id }}" data-is-smk="{{ $isSmk ? '1' : '0' }}" {{ old('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                            <option value="{{ $c->id }}" data-is-sma-smk="{{ $isSmaSmk ? '1' : '0' }}" {{ old('class_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Jurusan SMK / Program Keahlian</label>
+                    <label class="form-label">Jurusan / Konsentrasi Keahlian</label>
                     <select name="major" id="major-select" class="form-control-tzuchi searchable-select">
-                        <option value="Tidak Ada (Umum)" {{ old('major', 'Tidak Ada (Umum)') == 'Tidak Ada (Umum)' ? 'selected' : '' }}>-- Tidak Ada (Siswa SMP/SMA) --</option>
-                        <option value="Pengembangan Perangkat Lunak & Gim (PPLG)" {{ old('major') == 'Pengembangan Perangkat Lunak & Gim (PPLG)' ? 'selected' : '' }}>PPLG - Pengembangan Perangkat Lunak & Gim</option>
-                        <option value="Akuntansi & Keuangan Lembaga (AKL)" {{ old('major') == 'Akuntansi & Keuangan Lembaga (AKL)' ? 'selected' : '' }}>AKL - Akuntansi & Keuangan Lembaga</option>
-                        <option value="Manajemen Perkantoran (MPLB)" {{ old('major') == 'Manajemen Perkantoran (MPLB)' ? 'selected' : '' }}>MPLB - Manajemen Perkantoran</option>
-                        <option value="Otomatisasi & Tata Kelola Perkantoran (OTKP)" {{ old('major') == 'Otomatisasi & Tata Kelola Perkantoran (OTKP)' ? 'selected' : '' }}>OTKP - Otomatisasi & Tata Kelola Perkantoran</option>
+                        <option value="Tidak Ada (Umum)" {{ old('major', 'Tidak Ada (Umum)') == 'Tidak Ada (Umum)' ? 'selected' : '' }}>-- Tidak Ada (Siswa SMP) --</option>
+                        @foreach($majors as $m)
+                            <option value="{{ $m->name }}" {{ old('major') == $m->name ? 'selected' : '' }}>{{ $m->name }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -158,19 +158,30 @@
             instances['class-select'].on('change', function(value) {
                 const option = classSelect.querySelector(`option[value="${value}"]`);
                 if (option) {
-                    const isSmk = option.getAttribute('data-is-smk');
+                    const isSmaSmk = option.getAttribute('data-is-sma-smk');
                     const className = option.text;
                     
-                    if (isSmk === '0' || !value) {
+                    if (isSmaSmk === '0' || !value) {
                         instances['major-select'].setValue('Tidak Ada (Umum)');
                         instances['major-select'].disable();
                     } else {
                         instances['major-select'].enable();
-                        // Auto-select major based on class name
-                        if (className.includes('PPLG')) instances['major-select'].setValue('Pengembangan Perangkat Lunak & Gim (PPLG)');
-                        else if (className.includes('AKL')) instances['major-select'].setValue('Akuntansi & Keuangan Lembaga (AKL)');
-                        else if (className.includes('MPLB')) instances['major-select'].setValue('Manajemen Perkantoran (MPLB)');
-                        else if (className.includes('OTKP')) instances['major-select'].setValue('Otomatisasi & Tata Kelola Perkantoran (OTKP)');
+                        // Try to auto-select if major name is within class name
+                        const majorOptions = Array.from(document.getElementById('major-select').options);
+                        let autoSelected = false;
+                        for (let i = 0; i < majorOptions.length; i++) {
+                            const mName = majorOptions[i].value;
+                            if (mName !== 'Tidak Ada (Umum)') {
+                                // Extract acronym if it's in parentheses, like "Pengembangan... (PPLG)"
+                                const match = mName.match(/\(([^)]+)\)/);
+                                const acronym = match ? match[1] : mName;
+                                if (className.includes(acronym) || className.includes(mName)) {
+                                    instances['major-select'].setValue(mName);
+                                    autoSelected = true;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -179,7 +190,7 @@
             const initialVal = instances['class-select'].getValue();
             if (initialVal) {
                 const option = classSelect.querySelector(`option[value="${initialVal}"]`);
-                if (option && option.getAttribute('data-is-smk') === '0') {
+                if (option && option.getAttribute('data-is-sma-smk') === '0') {
                     instances['major-select'].disable();
                 }
             }
