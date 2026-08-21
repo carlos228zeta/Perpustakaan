@@ -126,6 +126,7 @@ class BukuController extends Controller
             return redirect()->route('buku.index')->with('error', 'Buku tidak ditemukan.');
         }
 
+        $book->initial_copies = DB::table('book_copies')->where('book_id', $id)->count();
         $categories = DB::table('categories')->get();
         $authors = DB::table('authors')->get();
         $publishers = DB::table('publishers')->get();
@@ -145,6 +146,7 @@ class BukuController extends Controller
             'publication_year' => 'nullable|integer',
             'synopsis' => 'nullable',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'initial_copies' => 'nullable|integer|min:0',
         ]);
 
         $updateData = [
@@ -168,7 +170,40 @@ class BukuController extends Controller
 
         DB::table('books')->where('id', $id)->update($updateData);
 
-        return redirect()->route('buku.index')->with('success', 'Buku berhasil diperbarui!');
+        // Handle Stock (Eksemplar) update
+        $currentCopiesCount = DB::table('book_copies')->where('book_id', $id)->count();
+        $newCopiesCount = $request->input('initial_copies', $currentCopiesCount);
+
+        if ($newCopiesCount > $currentCopiesCount) {
+            $diff = $newCopiesCount - $currentCopiesCount;
+            for ($i = 1; $i <= $diff; $i++) {
+                DB::table('book_copies')->insert([
+                    'book_id' => $id,
+                    'copy_code' => 'BK-' . str_pad($id, 4, '0', STR_PAD_LEFT) . '-' . time() . '-' . $i,
+                    'procurement_date' => now()->format('Y-m-d'),
+                    'condition' => 'good',
+                    'status' => 'available',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        } elseif ($newCopiesCount < $currentCopiesCount) {
+            $diff = $currentCopiesCount - $newCopiesCount;
+            // Hanya hapus stok yang sedang "available"
+            $availableCopies = DB::table('book_copies')
+                ->where('book_id', $id)
+                ->where('status', 'available')
+                ->orderBy('id', 'desc')
+                ->limit($diff)
+                ->pluck('id')
+                ->toArray();
+                
+            if (!empty($availableCopies)) {
+                DB::table('book_copies')->whereIn('id', $availableCopies)->delete();
+            }
+        }
+
+        return redirect()->route('buku.index')->with('success', 'Buku dan jumlah stok berhasil diperbarui!');
     }
 
     public function destroy($id)

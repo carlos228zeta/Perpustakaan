@@ -1,4 +1,4 @@
-@extends(auth()->check() ? 'layouts.admin' : 'layouts.master')
+@extends('layouts.admin')
 
 @section('title', 'Katalog Buku Perpustakaan')
 @section('header_title', 'Eksplorasi Katalog Buku')
@@ -13,7 +13,7 @@
 
     <!-- Filter & Search Section -->
     <div class="card-tzuchi" style="margin-bottom: 2rem;">
-        <form action="{{ route('public.books.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+        <form action="{{ route('katalog.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
             
             <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">Pencarian</label>
@@ -31,16 +31,6 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Penulis</label>
-                <select name="author_id" class="form-control-tzuchi">
-                    <option value="">-- Semua Penulis --</option>
-                    @foreach($authors as $auth)
-                        <option value="{{ $auth->id }}" {{ request('author_id') == $auth->id ? 'selected' : '' }}>{{ $auth->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">Urutan</label>
                 <select name="sort" class="form-control-tzuchi">
                     <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Terbaru</option>
@@ -53,7 +43,7 @@
                 <button type="submit" class="btn-tzuchi btn-primary-tzuchi" style="flex: 1;">
                     <i class="bi bi-filter"></i> Filter
                 </button>
-                <a href="{{ route('public.books.index') }}" class="btn-tzuchi btn-secondary-tzuchi" title="Reset Filter">
+                <a href="{{ route('katalog.index') }}" class="btn-tzuchi btn-secondary-tzuchi" title="Reset Filter">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
             </div>
@@ -94,14 +84,7 @@
                     <div class="book-author">{{ $book->author_name ?? 'Penulis Tidak Diketahui' }}</div>
                     
                     <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
-                        @if(($book->available_copies ?? 0) > 0)
-                            <span class="badge-tzuchi badge-success">Tersedia ({{ $book->available_copies }})</span>
-                        @elseif(($book->total_copies ?? 0) > 0)
-                            <span class="badge-tzuchi badge-warning">Dipinjam</span>
-                        @else
-                            <span class="badge-tzuchi badge-danger">Tidak Tersedia</span>
-                        @endif
-                        <a href="{{ route('public.books.show', $book->id) }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Detail</a>
+                        <a href="{{ route('katalog.show', $book->id) }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Detail Buku</a>
                     </div>
                 </div>
             </div>

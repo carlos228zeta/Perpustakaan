@@ -111,7 +111,7 @@
                         </td>
                         <td style="text-align: center;">
                             <div class="action-btn-group">
-                                <a href="{{ route('public.books.show', $buku->id) }}" target="_blank" class="action-btn action-btn-view" title="Pratinjau Buku">
+                                <a href="{{ route('katalog.show', $buku->id) }}" target="_blank" class="action-btn action-btn-view" title="Pratinjau Buku">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <a href="{{ route('buku.edit', $buku->id) }}" class="action-btn action-btn-edit" title="Edit Buku">

@@ -148,6 +148,7 @@
         document.querySelectorAll('.searchable-select').forEach(function(el) {
             instances[el.id || el.name] = new TomSelect(el, {
                 create: false,
+                plugins: ['dropdown_input'],
                 placeholder: "-- Pilih --",
                 dropdownParent: null
             });

@@ -75,10 +75,10 @@
                         <a class="nav-link nav-link-custom {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Beranda</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->is('books*') ? 'active' : '' }}" href="{{ route('public.books.index') }}">Katalog Buku</a>
+                        <a class="nav-link nav-link-custom {{ request()->is('katalog*') ? 'active' : '' }}" href="{{ route('katalog.index') }}">Katalog Buku</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="{{ route('public.books.index') }}#kategori">Kategori</a>
+                        <a class="nav-link nav-link-custom" href="{{ route('katalog.index') }}#kategori">Kategori</a>
                     </li>
                     <li class="nav-item me-lg-2">
                         <a class="nav-link nav-link-custom" href="{{ url('/') }}#tentang">Tentang Perpustakaan</a>
@@ -117,7 +117,7 @@
                     <h6 class="fw-bold text-dark mb-2" style="font-size: 0.95rem;">Navigasi Utama</h6>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2"><a href="{{ url('/') }}"><i class="bi bi-chevron-right me-1 text-success small"></i> Beranda</a></li>
-                        <li class="mb-2"><a href="{{ route('public.books.index') }}"><i class="bi bi-chevron-right me-1 text-success small"></i> Katalog Buku</a></li>
+                        <li class="mb-2"><a href="{{ route('katalog.index') }}"><i class="bi bi-chevron-right me-1 text-success small"></i> Katalog Buku</a></li>
                         <li class="mb-2"><a href="{{ url('/') }}#tentang"><i class="bi bi-chevron-right me-1 text-success small"></i> Tentang Perpustakaan</a></li>
                         <li class="mb-2"><a href="{{ route('login') }}"><i class="bi bi-chevron-right me-1 text-success small"></i> Login System</a></li>
                     </ul>

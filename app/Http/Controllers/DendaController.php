@@ -169,21 +169,53 @@ class DendaController extends Controller
     public function markAsPaid(Request $request, $id)
     {
         $type = $request->input('type', 'fine_record');
+        $paymentMethod = $request->input('payment_method', 'cash'); // qris, bca, mandiri, cash
+        $processedBy = auth()->id() ?? 1;
+        
+        $reference = $request->input('reference_number');
+        $notes = $request->input('notes');
+        $proofPath = null;
+        
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/fine_proofs'), $filename);
+            $proofPath = 'uploads/fine_proofs/' . $filename;
+        }
 
         if ($type === 'fine_record') {
             DB::table('fines')->where('id', $id)->update([
                 'status' => 'paid',
+                'paid_at' => now(),
+                'processed_by' => $processedBy,
                 'updated_at' => now(),
             ]);
 
-            // If there is an associated borrowing, mark it returned as well
             $fine = DB::table('fines')->where('id', $id)->first();
-            if ($fine && $fine->borrowing_id) {
-                DB::table('borrowings')->where('id', $fine->borrowing_id)->update([
-                    'status' => 'returned',
-                    'return_date' => now(),
-                    'updated_at' => now(),
+            
+            // Rekam ke tabel fine_payments
+            if ($fine) {
+                DB::table('fine_payments')->insert([
+                    'fine_id' => $fine->id,
+                    'payment_method' => $paymentMethod,
+                    'amount' => $fine->amount,
+                    'payment_date' => now(),
+                    'reference_number' => $reference,
+                    'proof_path' => $proofPath,
+                    'notes' => $notes,
+                    'processed_by' => $processedBy,
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
+
+                // If there is an associated borrowing, mark it returned as well
+                if ($fine->borrowing_id) {
+                    DB::table('borrowings')->where('id', $fine->borrowing_id)->update([
+                        'status' => 'returned',
+                        'return_date' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
         } else {
             // Active overdue borrowing
@@ -196,14 +228,29 @@ class DendaController extends Controller
                 $fineAmount = $daysLate * $finePerDay;
 
                 // Create paid fine record
-                DB::table('fines')->insert([
+                $fineId = DB::table('fines')->insertGetId([
                     'borrowing_id' => $id,
                     'user_id' => $borrowing->user_id,
                     'amount' => $fineAmount,
                     'reason' => "Keterlambatan pengembalian {$daysLate} hari",
                     'status' => 'paid',
+                    'paid_at' => $now,
+                    'processed_by' => $processedBy,
                     'created_at' => $now,
                     'updated_at' => $now,
+                ]);
+                
+                DB::table('fine_payments')->insert([
+                    'fine_id' => $fineId,
+                    'payment_method' => $paymentMethod,
+                    'amount' => $fineAmount,
+                    'payment_date' => $now,
+                    'reference_number' => $reference,
+                    'proof_path' => $proofPath,
+                    'notes' => $notes,
+                    'processed_by' => $processedBy,
+                    'created_at' => $now,
+                    'updated_at' => $now
                 ]);
 
                 // Update borrowing status
@@ -215,6 +262,29 @@ class DendaController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Denda berhasil ditandai LUNAS dan buku telah berhasil dikembalikan!');
+        return redirect()->back()->with('success', 'Pembayaran berhasil dikonfirmasi dan denda ditandai LUNAS!');
+    }
+
+    public function laporanPembayaran(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $payments = DB::table('fine_payments')
+            ->join('fines', 'fine_payments.fine_id', '=', 'fines.id')
+            ->join('users', 'fines.user_id', '=', 'users.id')
+            ->leftJoin('users as admin', 'fine_payments.processed_by', '=', 'admin.id')
+            ->select(
+                'fine_payments.*',
+                'users.name as student_name',
+                'admin.name as admin_name'
+            )
+            ->when($search, function ($query, $search) {
+                $query->where('users.name', 'like', "%{$search}%")
+                      ->orWhere('fine_payments.payment_method', 'like', "%{$search}%");
+            })
+            ->orderBy('fine_payments.payment_date', 'desc')
+            ->paginate(15);
+            
+        return view('admin.denda.laporan', compact('payments', 'search'));
     }
 }

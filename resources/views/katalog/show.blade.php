@@ -1,4 +1,4 @@
-@extends(auth()->check() ? 'layouts.admin' : 'layouts.master')
+@extends('layouts.admin')
 
 @section('title', $book->title)
 @section('header_title', 'Informasi Detail Buku')
@@ -7,7 +7,7 @@
 <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 2rem 1.25rem;">
     <!-- Breadcrumb -->
     <div style="margin-bottom: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
-        <a href="{{ url('/') }}">Beranda</a> / <a href="{{ route('public.books.index') }}">Katalog</a> / <span>Detail Buku</span>
+        <a href="{{ url('/') }}">Beranda</a> / <a href="{{ route('katalog.index') }}">Katalog</a> / <span>Detail Buku</span>
     </div>
 
     <div class="card-tzuchi" style="padding: 2rem;">
@@ -31,7 +31,7 @@
                             <i class="bi bi-box-arrow-in-right"></i> Login untuk Meminjam
                         </a>
                     @else
-                        @if($availableCopies > 0)
+                        @if($availableCount > 0)
                             <form action="{{ route('peminjaman.store') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="book_id" value="{{ $book->id }}">
@@ -72,7 +72,7 @@
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-color); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                     <div>
                         <div style="font-size: 0.775rem; color: var(--text-muted);">Status Buku</div>
-                        @if($availableCopies > 0)
+                        @if($availableCount > 0)
                             <strong style="color: var(--primary);">Tersedia</strong>
                         @elseif($totalCopies > 0)
                             <strong style="color: var(--warning);">Sedang Dipinjam</strong>
@@ -82,7 +82,7 @@
                     </div>
                     <div style="border-left: 1px solid var(--border-color); padding-left: 1rem;">
                         <div style="font-size: 0.775rem; color: var(--text-muted);">Jumlah Eksemplar</div>
-                        <strong>{{ $totalCopies }} Fisik ({{ $availableCopies }} Tersedia)</strong>
+                        <strong>{{ $totalCopies }} Fisik ({{ $availableCount }} Tersedia)</strong>
                     </div>
                     <div style="border-left: 1px solid var(--border-color); padding-left: 1rem;">
                         <div style="font-size: 0.775rem; color: var(--text-muted);">Lokasi Rak</div>

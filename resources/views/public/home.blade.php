@@ -48,7 +48,7 @@
         </p>
 
         <!-- Main Search Form -->
-        <form action="{{ route('public.books.index') }}" method="GET" class="hero-search-form">
+        <form action="{{ route('katalog.index') }}" method="GET" class="hero-search-form">
             <i class="bi bi-search hero-search-icon"></i>
             <input type="text" name="q" value="{{ request('q') }}" class="form-control-tzuchi hero-search-input" placeholder="Cari judul buku, penulis, atau ISBN...">
             <button type="submit" class="btn-tzuchi btn-primary-tzuchi hero-search-btn">
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $bannerTitle = \App\Models\LibrarySetting::get('banner_title', 'Festival Membaca & Eksplorasi Pustaka Cinta Kasih');
         $bannerSubtitle = \App\Models\LibrarySetting::get('banner_subtitle', 'Tingkatkan wawasan, perluas cakrawala, dan kembangkan budi pekerti humanis melalui ribuan koleksi buku pilihan.');
         $bannerBtnText = \App\Models\LibrarySetting::get('banner_button_text', 'Telusuri Koleksi Pilihan');
-        $bannerBtnLink = \App\Models\LibrarySetting::get('banner_button_link', '/books');
+        $bannerBtnLink = \App\Models\LibrarySetting::get('banner_button_link', route('katalog.index'));
 
         $hasBannerImg = ($bannerImg && file_exists(public_path($bannerImg)));
         $bannerImgUrl = $hasBannerImg ? asset($bannerImg) : null;
@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem;">Buku Terbaru</h2>
                 <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">Koleksi perpustakaan yang baru saja ditambahkan</p>
             </div>
-            <a href="{{ route('public.books.index') }}" style="font-weight: 600; font-size: 0.9rem;">Lihat Semua <i class="bi bi-arrow-right"></i></a>
+            <a href="{{ route('katalog.index') }}" style="font-weight: 600; font-size: 0.9rem;">Lihat Semua <i class="bi bi-arrow-right"></i></a>
         </div>
 
         <div class="book-grid">
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="book-card">
                     @if(!empty($book->cover_image) && file_exists(public_path($book->cover_image)))
                         <div style="width: 100%; height: 230px; overflow: hidden; background: var(--bg-color);">
-                            <img src="{{ asset($book->cover_image) }}" alt="{{ $book->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s var(--ease-spring);" class="book-cover-img">
+                            <img src="{{ asset($book->cover_image) }}" alt="{{ $book->title }}" style="width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s var(--ease-spring);" class="book-cover-img">
                         </div>
                     @else
                         <div class="book-cover-placeholder" style="background: linear-gradient(135deg, {{ $gradient[0] }} 0%, {{ $gradient[1] }} 100%);">
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="book-author">{{ $book->author_name ?? 'Penulis Tidak Diketahui' }}</div>
                         <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 0.5rem;">
                             <span class="badge-tzuchi badge-success">Tersedia</span>
-                            <a href="{{ route('public.books.show', $book->id) }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Detail</a>
+                            <a href="{{ route('katalog.show', $book->id) }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Detail</a>
                         </div>
                     </div>
                 </div>
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem; font-weight: 800;">Eksplorasi Kategori Buku</h2>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">Pilih bidang literasi yang ingin Anda pelajari</div>
             </div>
-            <a href="{{ route('public.books.index') }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Lihat Semua Katalog <i class="bi bi-arrow-right"></i></a>
+            <a href="{{ route('katalog.index') }}" class="btn-tzuchi btn-secondary-tzuchi btn-sm">Lihat Semua Katalog <i class="bi bi-arrow-right"></i></a>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.25rem;">
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 @php
                     $catIcon = $iconMap[$category->name] ?? 'bi-journal-bookmark';
                 @endphp
-                <a href="{{ route('public.books.index', ['category_id' => $category->id]) }}" class="category-card">
+                <a href="{{ route('katalog.index', ['category_id' => $category->id]) }}" class="category-card">
                     <div class="category-icon-wrapper">
                         <i class="bi {{ $catIcon }}"></i>
                     </div>

@@ -138,13 +138,9 @@
                         </td>
                         <td style="text-align: center;">
                             @if(!$fine->is_paid)
-                                <form action="{{ route('denda.pay', $fine->id) }}" method="POST" style="display: inline;" onsubmit="return confirmDeleteModal(event, 'Konfirmasi Pelunasan Denda', 'Tandai denda Rp {{ number_format($fine->fine_amount, 0, ',', '.') }} sebagai LUNAS dan proses pengembalian buku?')">
-                                    @csrf
-                                    <input type="hidden" name="type" value="{{ $fine->type }}">
-                                    <button type="submit" class="btn-tzuchi btn-primary-tzuchi btn-sm" style="font-size: 0.775rem;">
-                                        <i class="bi bi-check-lg"></i> Tandai Lunas
-                                    </button>
-                                </form>
+                                <button type="button" onclick="openPaymentModal('{{ $fine->id }}', '{{ $fine->type }}', {{ $fine->fine_amount }})" class="btn-tzuchi btn-primary-tzuchi btn-sm" style="font-size: 0.775rem;">
+                                    <i class="bi bi-wallet2"></i> Bayar
+                                </button>
                             @else
                                 <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="bi bi-check-all"></i> Selesai</span>
                             @endif
@@ -162,4 +158,89 @@
         </table>
     </div>
 </div>
+
+<!-- Payment Modal -->
+<div class="modal-tzuchi-backdrop" id="paymentModal" style="display:none;">
+    <div class="modal-tzuchi-dialog">
+        <div class="modal-tzuchi-header">
+            <h3 class="modal-tzuchi-title">Proses Pembayaran Denda</h3>
+            <button type="button" class="modal-tzuchi-close" onclick="closeModal('paymentModal')">&times;</button>
+        </div>
+        <form id="paymentForm" method="POST" action="" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="type" id="paymentType" value="">
+            <div class="modal-tzuchi-body">
+                <div style="margin-bottom: 1.25rem; text-align: center; background: #F8FAFC; padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Total Tagihan</div>
+                    <strong id="paymentAmountDisplay" style="color: var(--danger); font-size: 1.6rem; font-weight: 800;">Rp0</strong>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Metode Pembayaran</label>
+                    <select name="payment_method" id="paymentMethodSelect" class="form-control-tzuchi" required onchange="togglePaymentFields()">
+                        <option value="cash">Tunai (Cash)</option>
+                        <option value="qris">QRIS (E-Wallet / M-Banking)</option>
+                        <option value="bca">Transfer Bank BCA</option>
+                        <option value="mandiri">Transfer Bank Mandiri</option>
+                    </select>
+                </div>
+
+                <div id="transferFields" style="display: none; padding: 1rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label class="form-label required">Nomor Referensi / Nomor Rekening</label>
+                        <input type="text" name="reference_number" id="referenceInput" class="form-control-tzuchi" placeholder="Misal: TRF-12345 / Nomor VA">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label required">Bukti Transfer (Gambar)</label>
+                        <input type="file" name="proof" id="proofInput" class="form-control-tzuchi" accept="image/*">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Upload screenshot resi atau foto bukti transfer (Max: 2MB).</div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Catatan Pembayaran (Opsional)</label>
+                    <textarea name="notes" class="form-control-tzuchi" rows="2" placeholder="Catatan tambahan, contoh: Uang pas atau kembalian"></textarea>
+                </div>
+            </div>
+            <div class="modal-tzuchi-footer">
+                <button type="button" onclick="closeModal('paymentModal')" class="btn-tzuchi btn-secondary-tzuchi">Batal</button>
+                <button type="submit" class="btn-tzuchi btn-primary-tzuchi" style="background: var(--primary);"><i class="bi bi-check-circle"></i> Konfirmasi Pembayaran</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+function openPaymentModal(id, type, amount) {
+    const form = document.getElementById('paymentForm');
+    form.action = "{{ url('admin/denda') }}/" + id + "/pay";
+    document.getElementById('paymentType').value = type;
+    document.getElementById('paymentAmountDisplay').innerText = "Rp" + new Intl.NumberFormat('id-ID').format(amount);
+    
+    document.getElementById('paymentModal').style.display = 'flex';
+}
+
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+function togglePaymentFields() {
+    const method = document.getElementById('paymentMethodSelect').value;
+    const transferFields = document.getElementById('transferFields');
+    const refInput = document.getElementById('referenceInput');
+    const proofInput = document.getElementById('proofInput');
+    
+    if (method !== 'cash') {
+        transferFields.style.display = 'block';
+        refInput.setAttribute('required', 'required');
+        proofInput.setAttribute('required', 'required');
+    } else {
+        transferFields.style.display = 'none';
+        refInput.removeAttribute('required');
+        proofInput.removeAttribute('required');
+    }
+}
+</script>
+@endpush

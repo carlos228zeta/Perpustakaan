@@ -70,7 +70,7 @@
             <h3 style="font-size: 1.1rem; margin: 0; font-weight: 800;">Peminjaman Aktif Saya</h3>
             <div style="font-size: 0.775rem; color: var(--text-muted);">Daftar koleksi buku yang sedang kamu pinjam</div>
         </div>
-        <a href="{{ route('public.books.index') }}" class="btn-tzuchi btn-primary-tzuchi btn-sm"><i class="bi bi-search"></i> Telusuri Buku</a>
+        <a href="{{ route('katalog.index') }}" class="btn-tzuchi btn-primary-tzuchi btn-sm"><i class="bi bi-search"></i> Telusuri Buku</a>
     </div>
 
     <div class="table-responsive">

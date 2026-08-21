@@ -50,7 +50,7 @@
 
             <ul class="nav-menu">
                 <li><a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">Beranda</a></li>
-                <li><a href="{{ route('public.books.index') }}" class="nav-link {{ request()->is('books*') ? 'active' : '' }}">Katalog Buku</a></li>
+                <li><a href="{{ route('katalog.index') }}" class="nav-link {{ request()->is('katalog*') ? 'active' : '' }}">Katalog Buku</a></li>
                 
                 <!-- Dark Mode Switcher Button -->
                 <li>
@@ -109,7 +109,7 @@
                 <h4>Navigasi Perpustakaan</h4>
                 <ul class="footer-links">
                     <li><a href="{{ url('/') }}"><i class="bi bi-chevron-right"></i> Beranda Publik</a></li>
-                    <li><a href="{{ route('public.books.index') }}"><i class="bi bi-chevron-right"></i> Katalog & Pencarian Buku</a></li>
+                    <li><a href="{{ route('katalog.index') }}"><i class="bi bi-chevron-right"></i> Katalog & Pencarian Buku</a></li>
                     <li><a href="{{ route('login') }}"><i class="bi bi-chevron-right"></i> Portal Anggota & Login</a></li>
                 </ul>
             </div>
@@ -130,7 +130,7 @@
             <div class="footer-column">
                 <h4>Layanan & Fasilitas</h4>
                 <ul class="footer-links">
-                    <li><a href="{{ route('public.books.index') }}"><i class="bi bi-book-half" style="color: var(--primary);"></i> Katalog Buku Digital</a></li>
+                    <li><a href="{{ route('katalog.index') }}"><i class="bi bi-book-half" style="color: var(--primary);"></i> Katalog Buku Digital</a></li>
                     <li><a href="javascript:void(0)" onclick="openTzuchiModal('modalTataTertib')"><i class="bi bi-journal-check" style="color: var(--primary);"></i> Tata Tertib Peminjaman</a></li>
                     <li><a href="javascript:void(0)" onclick="openTzuchiModal('modalRuangBaca')"><i class="bi bi-building-check" style="color: var(--primary);"></i> Ruang Baca & Quiet Zone</a></li>
                     <li><a href="javascript:void(0)" onclick="openTzuchiModal('modalWifi')"><i class="bi bi-wifi" style="color: var(--primary);"></i> Layanan Digital & Wi-Fi</a></li>

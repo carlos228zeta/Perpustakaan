@@ -119,9 +119,17 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Tahun Terbit</label>
-                <input type="number" name="publication_year" value="{{ old('publication_year', $book->publication_year) }}" class="form-control-tzuchi">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Tahun Terbit</label>
+                    <input type="number" name="publication_year" value="{{ old('publication_year', $book->publication_year) }}" class="form-control-tzuchi">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">Total Stok / Eksemplar Saat Ini</label>
+                    <input type="number" name="initial_copies" value="{{ old('initial_copies', $book->initial_copies ?? 1) }}" min="0" class="form-control-tzuchi" required>
+                    <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.25rem;">Ubah angka ini untuk menambah atau mengurangi stok fisik. Sistem tidak akan mengurangi stok yang sedang dipinjam.</div>
+                </div>
             </div>
 
             <div class="form-group">

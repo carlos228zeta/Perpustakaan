@@ -92,8 +92,11 @@
                     <li class="sidebar-item {{ request()->is('admin/pengembalian*') ? 'active' : '' }}">
                         <a href="{{ url('admin/pengembalian') }}"><i class="bi bi-box-arrow-in-left"></i> <span>Pengembalian</span></a>
                     </li>
-                    <li class="sidebar-item {{ request()->is('admin/denda*') ? 'active' : '' }}">
+                    <li class="sidebar-item {{ request()->is('admin/denda') ? 'active' : '' }}">
                         <a href="{{ route('denda.index') }}"><i class="bi bi-wallet2"></i> <span>Kelola Denda</span></a>
+                    </li>
+                    <li class="sidebar-item {{ request()->is('admin/denda/laporan*') ? 'active' : '' }}">
+                        <a href="{{ route('denda.laporan') }}"><i class="bi bi-receipt"></i> <span>Laporan Pembayaran</span></a>
                     </li>
                     @php
                         $isSettingsActive = request()->is('admin/pengaturan*') || request()->is('admin/banner*');
@@ -158,7 +161,7 @@
                         <a href="{{ route('teacher.dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> <span>Dashboard Guru</span></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{ route('public.books.index') }}"><i class="bi bi-search"></i> <span>Katalog Buku</span></a>
+                        <a href="{{ route('katalog.index') }}"><i class="bi bi-search"></i> <span>Katalog Buku</span></a>
                     </li>
                     <li class="sidebar-item {{ request()->is('profile*') ? 'active' : '' }}">
                         <a href="{{ route('profile.index') }}"><i class="bi bi-person-circle"></i> <span>Profil Saya</span></a>
@@ -169,7 +172,7 @@
                         <a href="{{ route('student.dashboard') }}"><i class="bi bi-grid-1x2-fill"></i> <span>Dashboard Siswa</span></a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{ route('public.books.index') }}"><i class="bi bi-search"></i> <span>Katalog Buku</span></a>
+                        <a href="{{ route('katalog.index') }}"><i class="bi bi-search"></i> <span>Katalog Buku</span></a>
                     </li>
                     <li class="sidebar-item {{ request()->is('profile*') ? 'active' : '' }}">
                         <a href="{{ route('profile.index') }}"><i class="bi bi-person-circle"></i> <span>Profil Saya</span></a>
@@ -410,6 +413,11 @@
                 });
             }
 
+            // Pindahkan semua modal ke body agar position fixed tidak terperangkap oleh .app-main
+            document.querySelectorAll('.modal-tzuchi-backdrop').forEach(modal => {
+                document.body.appendChild(modal);
+            });
+
             // Handle Smooth Login Transition into Dashboard
             if (sessionStorage.getItem('tzuchi_login_success') === '1') {
                 sessionStorage.removeItem('tzuchi_login_success');
@@ -463,6 +471,7 @@
         return false;
     }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     @stack('scripts')
 </body>
 </html>

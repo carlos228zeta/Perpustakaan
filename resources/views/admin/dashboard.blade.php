@@ -25,8 +25,8 @@
             <div class="stat-label">Total Buku & Eksemplar</div>
             <div class="stat-value">{{ $totalBooks }} <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">Judul</span></div>
             <div class="stat-meta">
-                <span class="badge-tzuchi badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;"><i class="bi bi-journal-check"></i> {{ $availableCopies ?? $totalCopies }} Tersedia</span>
-                <span>Dari {{ $totalCopies }} Eksemplar</span>
+                <span class="badge-tzuchi badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;"><i class="bi bi-journal-check"></i> {{ $availableCopies ?? $totalCopies }} / {{ $totalCopies }}</span>
+                <span>Eksemplar</span>
             </div>
         </div>
         <div class="stat-icon-wrapper stat-icon-blue">
@@ -66,6 +66,19 @@
         <div class="stat-icon-wrapper stat-icon-red">
             <i class="bi bi-wallet-fill"></i>
         </div>
+    </div>
+</div>
+
+<!-- Spline Area Chart (S-Curve) -->
+<div class="card-tzuchi" style="margin-bottom: 2rem;">
+    <div class="card-header-tzuchi">
+        <div>
+            <h3 style="font-size: 1.1rem; margin: 0; font-weight: 800;">Tren Sirkulasi Peminjaman (7 Hari Terakhir)</h3>
+            <div style="font-size: 0.775rem; color: var(--text-muted);">Grafik jumlah peminjaman buku per hari</div>
+        </div>
+    </div>
+    <div class="card-body" style="padding: 1rem 1.5rem 1.5rem 1.5rem;">
+        <div id="borrowingChart" style="min-height: 300px;"></div>
     </div>
 </div>
 
@@ -128,4 +141,120 @@
         </table>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var options = {
+            series: [{
+                name: 'Peminjaman Buku',
+                data: {!! json_encode($chartData) !!}
+            }],
+            chart: {
+                height: 320,
+                type: 'area',
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: false
+                }
+            },
+            colors: ['#22C55E'],
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.45,
+                    opacityTo: 0.05,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: {!! json_encode($chartDates) !!},
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                },
+                labels: {
+                    style: {
+                        colors: '#94A3B8',
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                labels: {
+                    style: {
+                        colors: '#94A3B8',
+                        fontSize: '12px'
+                    },
+                    formatter: function(val) {
+                        return Math.round(val);
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#F1F5F9',
+                strokeDashArray: 4,
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                },
+                xaxis: {
+                    lines: {
+                        show: false
+                    }
+                },
+                padding: {
+                    top: 15,
+                    right: 15,
+                    bottom: 0,
+                    left: 15
+                }
+            },
+            tooltip: {
+                theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light',
+                y: {
+                    formatter: function (val) {
+                        return val + " Transaksi"
+                    }
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#borrowingChart"), options);
+        chart.render();
+
+        const themeToggleBtn = document.getElementById('adminThemeToggle');
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    chart.updateOptions({
+                        tooltip: {
+                            theme: currentTheme === 'dark' ? 'dark' : 'light'
+                        },
+                        grid: {
+                            borderColor: currentTheme === 'dark' ? '#334155' : '#F1F5F9'
+                        }
+                    });
+                }, 100);
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

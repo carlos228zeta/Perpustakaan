@@ -25,7 +25,7 @@
             
             <div class="form-group">
                 <label class="form-label required">Peminjam (Siswa / Guru)</label>
-                <select name="user_id" class="form-control-tzuchi" required>
+                <select name="user_id" class="form-control-tzuchi searchable-select" required>
                     <option value="">-- Pilih Peminjam --</option>
                     @foreach($users as $u)
                         <option value="{{ $u->id }}" {{ old('user_id') == $u->id ? 'selected' : '' }}>
@@ -37,7 +37,7 @@
 
             <div class="form-group">
                 <label class="form-label required">Pilih Buku</label>
-                <select name="book_id" class="form-control-tzuchi" required>
+                <select name="book_id" class="form-control-tzuchi searchable-select" required>
                     <option value="">-- Pilih Buku --</option>
                     @foreach($books as $b)
                         <option value="{{ $b->id }}" {{ old('book_id') == $b->id ? 'selected' : '' }}>
@@ -71,3 +71,70 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    .ts-control {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        padding: 0.65rem 1rem;
+        background-color: rgba(255, 255, 255, 0.95);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        min-height: 42px;
+        box-shadow: none;
+    }
+    .ts-control.focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+    .ts-dropdown {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-lg);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.9rem;
+    }
+    .ts-dropdown .option {
+        padding: 0.5rem 1rem;
+    }
+    .ts-dropdown .option.active {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+    [data-theme="dark"] .ts-control {
+        background-color: #0F172A;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    [data-theme="dark"] .ts-dropdown {
+        background-color: #1E293B;
+        border-color: #334155;
+        color: #F8FAFC;
+    }
+    [data-theme="dark"] .ts-dropdown .option.active {
+        background-color: var(--primary);
+        color: white;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.searchable-select').forEach(function(el) {
+            new TomSelect(el, {
+                create: false,
+                plugins: ['dropdown_input'],
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+        });
+    });
+</script>
+@endpush

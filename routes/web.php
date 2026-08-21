@@ -21,17 +21,126 @@ use App\Http\Controllers\PengaturanController;
 |--------------------------------------------------------------------------
 */
 
-// Temporary route removed
+Route::get('/seed-chart', function() {
+    $student = \Illuminate\Support\Facades\DB::table('users')->where('role_id', 3)->first();
+    if (!$student) return 'Gagal: Tidak ada data siswa.';
+    
+    // 1. Bersihkan data sebelumnya (Reset)
+    \Illuminate\Support\Facades\DB::table('fines')->delete();
+    \Illuminate\Support\Facades\DB::table('borrowing_items')->delete();
+    \Illuminate\Support\Facades\DB::table('borrowings')->delete();
+    \Illuminate\Support\Facades\DB::table('book_copies')->update(['status' => 'available']);
+    
+    $copies = \Illuminate\Support\Facades\DB::table('book_copies')->where('status', 'available')->get();
+    if ($copies->isEmpty()) return 'Gagal: Tidak ada eksemplar buku yang tersedia.';
+    
+    $copyIndex = 0;
+    $now = \Carbon\Carbon::now();
 
+    // 2. Buat Data Denda (Telat Balikin) & Overdue Aktif
+    // Overdue Aktif (Belum kembali, telat 5 hari)
+    for ($i = 0; $i < 3; $i++) {
+        $borrowId = \Illuminate\Support\Facades\DB::table('borrowings')->insertGetId([
+            'user_id' => $student->id,
+            'approved_by' => 1,
+            'borrow_date' => $now->copy()->subDays(12)->format('Y-m-d'),
+            'due_date' => $now->copy()->subDays(5)->format('Y-m-d'),
+            'status' => 'borrowed',
+            'created_at' => $now->copy()->subDays(12)->format('Y-m-d H:i:s'),
+            'updated_at' => $now->copy()->subDays(12)->format('Y-m-d H:i:s'),
+        ]);
+        
+        \Illuminate\Support\Facades\DB::table('borrowing_items')->insert([
+            'borrowing_id' => $borrowId,
+            'book_copy_id' => $copies[$copyIndex]->id,
+            'created_at' => $now->copy()->subDays(12)->format('Y-m-d H:i:s'),
+            'updated_at' => $now->copy()->subDays(12)->format('Y-m-d H:i:s'),
+        ]);
+        \Illuminate\Support\Facades\DB::table('book_copies')->where('id', $copies[$copyIndex]->id)->update(['status' => 'borrowed']);
+        $copyIndex++;
+    }
+
+    // Denda (Sudah kembali, tapi kena denda)
+    for ($i = 0; $i < 2; $i++) {
+        $borrowId = \Illuminate\Support\Facades\DB::table('borrowings')->insertGetId([
+            'user_id' => $student->id,
+            'approved_by' => 1,
+            'borrow_date' => $now->copy()->subDays(20)->format('Y-m-d'),
+            'due_date' => $now->copy()->subDays(13)->format('Y-m-d'),
+            'return_date' => $now->copy()->subDays(10)->format('Y-m-d'),
+            'status' => 'returned',
+            'created_at' => $now->copy()->subDays(20)->format('Y-m-d H:i:s'),
+            'updated_at' => $now->copy()->subDays(10)->format('Y-m-d H:i:s'),
+        ]);
+        
+        \Illuminate\Support\Facades\DB::table('borrowing_items')->insert([
+            'borrowing_id' => $borrowId,
+            'book_copy_id' => $copies[$copyIndex]->id,
+            'created_at' => $now->copy()->subDays(20)->format('Y-m-d H:i:s'),
+            'updated_at' => $now->copy()->subDays(10)->format('Y-m-d H:i:s'),
+        ]);
+        
+        \Illuminate\Support\Facades\DB::table('fines')->insert([
+            'user_id' => $student->id,
+            'borrowing_id' => $borrowId,
+            'amount' => 3000,
+            'reason' => 'Keterlambatan 3 hari',
+            'status' => 'unpaid',
+            'created_at' => $now->copy()->subDays(10)->format('Y-m-d H:i:s'),
+            'updated_at' => $now->copy()->subDays(10)->format('Y-m-d H:i:s'),
+        ]);
+        $copyIndex++;
+    }
+
+    // 3. Pola S-Curve untuk 7 hari terakhir
+    $pattern = [2, 6, 15, 24, 18, 9, 3]; 
+    
+    foreach ($pattern as $dayOffset => $count) {
+        $date = clone $now;
+        $date->subDays(6 - $dayOffset);
+        $dateStr = $date->format('Y-m-d');
+        
+        for ($j = 0; $j < $count; $j++) {
+            if (!isset($copies[$copyIndex])) $copyIndex = 0;
+            
+            $borrowId = \Illuminate\Support\Facades\DB::table('borrowings')->insertGetId([
+                'user_id' => $student->id,
+                'approved_by' => 1,
+                'borrow_date' => $dateStr,
+                'due_date' => (clone $date)->addDays(7)->format('Y-m-d'),
+                'status' => 'borrowed',
+                'created_at' => $dateStr . ' 10:00:00',
+                'updated_at' => $dateStr . ' 10:00:00',
+            ]);
+            
+            \Illuminate\Support\Facades\DB::table('borrowing_items')->insert([
+                'borrowing_id' => $borrowId,
+                'book_copy_id' => $copies[$copyIndex]->id,
+                'created_at' => $dateStr . ' 10:00:00',
+                'updated_at' => $dateStr . ' 10:00:00',
+            ]);
+            
+            \Illuminate\Support\Facades\DB::table('book_copies')
+                ->where('id', $copies[$copyIndex]->id)
+                ->update(['status' => 'borrowed']);
+                
+            $copyIndex++;
+        }
+    }
+    
+    return redirect()->route('admin.dashboard')->with('success', 'Data direset! Data denda & Kurva S berhasil dibuat.');
+});
 // Public Routes (Accessible without login)
 Route::get('/', [PublicController::class, 'index'])->name('home');
-Route::get('/books', [PublicController::class, 'catalog'])->name('public.books.index');
-Route::get('/books/{id}', [PublicController::class, 'show'])->name('public.books.show');
 
 Auth::routes();
 
 // Protected Routes (Login required)
 Route::middleware(['auth'])->group(function () {
+    
+    // Catalog (Backend)
+    Route::get('/katalog', [\App\Http\Controllers\KatalogController::class, 'index'])->name('katalog.index');
+    Route::get('/katalog/{id}', [\App\Http\Controllers\KatalogController::class, 'show'])->name('katalog.show');
     
     // Redirect /home to appropriate role dashboard
     Route::get('/home', function() {
@@ -76,6 +185,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('siswa', SiswaController::class);
         Route::resource('peminjaman', RiwayatPinjamController::class);
         
+        Route::get('/denda/laporan', [\App\Http\Controllers\DendaController::class, 'laporanPembayaran'])->name('denda.laporan');
         Route::get('/denda', [\App\Http\Controllers\DendaController::class, 'index'])->name('denda.index');
         Route::post('/denda/{id}/pay', [\App\Http\Controllers\DendaController::class, 'markAsPaid'])->name('denda.pay');
         

@@ -46,7 +46,23 @@ class DashboardController extends Controller
             ->whereIn('status', ['borrowed', 'approved'])
             ->where('due_date', '<', Carbon::now())
             ->count();
-        $totalFines = DB::table('fines')->sum('amount');
+            
+        $finePerDay = (int) \App\Models\LibrarySetting::get('fine_per_day', 1000);
+        $activeOverdueData = DB::table('borrowings')
+            ->whereIn('status', ['borrowed', 'approved'])
+            ->where('due_date', '<', Carbon::now())
+            ->whereNotIn('id', DB::table('fines')->whereNotNull('borrowing_id')->pluck('borrowing_id'))
+            ->get();
+            
+        $activeFines = 0;
+        $now = Carbon::now();
+        foreach ($activeOverdueData as $ao) {
+            $dueDate = Carbon::parse($ao->due_date);
+            $daysLate = $now->diffInDays($dueDate);
+            $activeFines += $daysLate * $finePerDay;
+        }
+
+        $totalFines = DB::table('fines')->sum('amount') + $activeFines;
         $recentActivities = DB::table('activity_logs')
             ->leftJoin('users', 'activity_logs.user_id', '=', 'users.id')
             ->select('activity_logs.*', 'users.name as user_name')
@@ -54,10 +70,22 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
+        // Chart Data: Borrowings over the last 7 days
+        $chartDates = [];
+        $chartData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i)->format('Y-m-d');
+            $chartDates[] = Carbon::now()->subDays($i)->isoFormat('D MMM');
+            $count = DB::table('borrowings')
+                ->whereDate('borrow_date', $date)
+                ->count();
+            $chartData[] = $count;
+        }
+
         return view('admin.dashboard', compact(
             'totalUsers', 'totalStudents', 'totalTeachers', 'totalLibrarians',
             'totalBooks', 'totalCopies', 'availableCopies', 'activeBorrowings', 'overdueBorrowings',
-            'totalFines', 'recentActivities'
+            'totalFines', 'recentActivities', 'chartDates', 'chartData'
         ));
     }
 

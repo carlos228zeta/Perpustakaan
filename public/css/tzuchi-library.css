@@ -727,8 +727,13 @@ a:hover {
   margin-top: 0.35rem;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.35rem;
   min-height: 24px;
+}
+
+.stat-meta span {
+  white-space: nowrap;
 }
 
 .stat-icon-wrapper {
@@ -1093,6 +1098,7 @@ textarea, textarea.form-control-tzuchi {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .badge-success { background: #E8F5E9; color: var(--primary); border: 1px solid rgba(46, 125, 50, 0.2); }
