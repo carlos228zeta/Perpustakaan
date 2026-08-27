@@ -40,6 +40,7 @@ class DendaController extends Controller
                 'books.title as book_title',
                 'book_copies.copy_code'
             )
+            ->where('fines.reason', 'not like', '%[ARCHIVED]%')
             ->get();
 
         // 2. Fetch active overdue borrowings (not yet recorded in fines table)
@@ -286,5 +287,33 @@ class DendaController extends Controller
             ->paginate(15);
             
         return view('admin.denda.laporan', compact('payments', 'search'));
+    }
+
+    public function archive($id)
+    {
+        $fine = DB::table('fines')->where('id', $id)->first();
+        if ($fine) {
+            DB::table('fines')->where('id', $id)->update([
+                'reason' => $fine->reason . ' [ARCHIVED]'
+            ]);
+        }
+        return redirect()->back()->with('success', 'Denda berhasil diarsipkan/dihapus dari daftar.');
+    }
+
+    public function destroyPayment($id)
+    {
+        // Delete the fine. Because of cascadeOnDelete, the fine_payments record will also be deleted.
+        DB::table('fines')->where('id', $id)->delete();
+        return redirect()->back()->with('success', 'Catatan denda berhasil dihapus selamanya.');
+    }
+
+    public function bulkDestroyPayment(Request $request)
+    {
+        $ids = $request->input('ids');
+        if ($ids && is_array($ids) && count($ids) > 0) {
+            DB::table('fines')->whereIn('id', $ids)->delete();
+            return redirect()->back()->with('success', count($ids) . ' catatan denda berhasil dihapus selamanya.');
+        }
+        return redirect()->back()->with('error', 'Tidak ada data yang dipilih untuk dihapus.');
     }
 }

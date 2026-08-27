@@ -161,7 +161,7 @@
                     enabled: false
                 }
             },
-            colors: ['#22C55E'],
+            colors: ['{{ \App\Models\LibrarySetting::get("theme_primary_color", "#22C55E") }}'],
             dataLabels: {
                 enabled: false
             },

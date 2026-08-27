@@ -62,12 +62,20 @@ class User extends Authenticatable
 
     public function hasRole($role)
     {
-        return $this->role && $this->role->name === $role;
+        return $this->role && strcasecmp($this->role->name, $role) === 0;
     }
 
     public function hasAnyRole(array $roles)
     {
-        return $this->role && in_array($this->role->name, $roles);
+        if (!$this->role) {
+            return false;
+        }
+        foreach ($roles as $r) {
+            if (strcasecmp($this->role->name, trim($r)) === 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getRoleDisplayNameAttribute()

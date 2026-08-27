@@ -50,7 +50,7 @@
                                 @if($u->role_id == 3)
                                     <span class="badge" style="background-color: #dbeafe; color: #1e3a8a; font-weight: 500; font-size: 0.85rem;">Guru</span>
                                 @elseif($u->role_id == 4)
-                                    <span class="badge" style="background-color: #dcfce7; color: #166534; font-weight: 500; font-size: 0.85rem;">Siswa</span>
+                                    <span class="badge" style="background-color: var(--primary-light); color: var(--primary); font-weight: 500; font-size: 0.85rem;">Siswa</span>
                                 @else
                                     <span class="badge bg-secondary">Unknown</span>
                                 @endif

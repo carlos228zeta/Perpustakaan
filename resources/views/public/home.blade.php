@@ -101,7 +101,7 @@
 .tzuchi-nav .nav-link:hover, 
 .tzuchi-nav .nav-link.active {
   color: #FFFFFF !important;
-  background-color: rgba(46, 125, 50, 0.85) !important;
+  background-color: var(--primary) !important;
 }
 
 /* Fullscreen Hero Slider Container (100% Height of Viewport) */
@@ -164,9 +164,9 @@
   margin-bottom: 1.25rem;
   font-size: 0.85rem;
   padding: 0.45rem 1.1rem;
-  background: rgba(46, 125, 50, 0.9) !important;
+  background: var(--primary) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.4);
+  box-shadow: 0 4px 14px var(--primary-shadow);
   backdrop-filter: blur(10px);
 }
 
@@ -207,8 +207,9 @@
 }
 
 .hero-search-form:focus-within {
-  box-shadow: 0 16px 40px rgba(46, 125, 50, 0.35);
-  transform: translateY(-2px);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-primary);
+  border-color: var(--primary-light);
 }
 
 .hero-search-icon {
@@ -237,6 +238,12 @@
   white-space: nowrap;
 }
 
+.hero-search-btn:hover {
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
 /* Dark Mode Unified Hero Search Styling */
 [data-theme="dark"] .hero-search-form {
   background: rgba(15, 23, 42, 0.82) !important;
@@ -254,7 +261,7 @@
 }
 
 [data-theme="dark"] .hero-search-icon {
-  color: #4ADE80 !important;
+  color: var(--primary);
 }
 
 /* Dots Navigation Bar */
@@ -284,8 +291,9 @@
   width: 32px;
   border-radius: 10px;
   background: var(--primary) !important;
-  border-color: #FFFFFF !important;
-  box-shadow: 0 0 12px rgba(46, 125, 50, 0.8);
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--primary-glow);
+  outline: none;
 }
 </style>
 

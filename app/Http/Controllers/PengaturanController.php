@@ -50,7 +50,19 @@ class PengaturanController extends Controller
             'layanan_ruang_baca' => 'nullable|string|max:2000',
             'layanan_wifi' => 'nullable|string|max:2000',
             'layanan_faq' => 'nullable|string|max:2000',
+            'qris_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'bca_account' => 'nullable|string|max:100',
+            'bca_account_name' => 'nullable|string|max:255',
+            'mandiri_account' => 'nullable|string|max:100',
+            'mandiri_account_name' => 'nullable|string|max:255',
         ]);
+
+        if ($request->hasFile('qris_image')) {
+            $file = $request->file('qris_image');
+            $fileName = 'qris_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/payments'), $fileName);
+            LibrarySetting::set('qris_image', 'images/payments/' . $fileName);
+        }
 
         if ($request->hasFile('institution_logo')) {
             $file = $request->file('institution_logo');
@@ -110,9 +122,30 @@ class PengaturanController extends Controller
             'layanan_ruang_baca',
             'layanan_wifi',
             'layanan_faq',
+            'bca_account',
+            'bca_account_name',
+            'mandiri_account',
+            'mandiri_account_name',
         ]) as $key => $value) {
             if ($value !== null) {
                 LibrarySetting::set($key, $value);
+            }
+        }
+
+        // Save custom theme color if it's not a default preset
+        if ($request->has('theme_primary_color')) {
+            $newColor = strtoupper($request->input('theme_primary_color'));
+            $defaultColors = ['#2E7D32', '#1E40AF', '#7E22CE', '#DC2626', '#0D9488', '#D97706', '#E11D48', '#0284C7', '#111827'];
+            
+            if (!in_array($newColor, $defaultColors)) {
+                $customColors = json_decode(LibrarySetting::get('custom_theme_colors', '[]'), true);
+                if (!is_array($customColors)) $customColors = [];
+                
+                if (!in_array($newColor, $customColors)) {
+                    array_unshift($customColors, $newColor);
+                    $customColors = array_slice($customColors, 0, 7); // keep max 7 recent colors
+                    LibrarySetting::set('custom_theme_colors', json_encode($customColors));
+                }
             }
         }
 

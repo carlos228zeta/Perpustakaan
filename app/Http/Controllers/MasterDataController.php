@@ -38,13 +38,74 @@ class MasterDataController extends Controller
             }
             $shelves = $q->orderBy('code')->paginate(15);
         } elseif ($tab == 'kelas') {
+            // Auto-populate default classes if empty
+            if (DB::table('classes')->count() === 0) {
+                $academicYear = DB::table('academic_years')->first();
+                if (!$academicYear) {
+                    $academicYearId = DB::table('academic_years')->insertGetId([
+                        'name' => '2026/2027',
+                        'is_active' => true,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } else {
+                    $academicYearId = $academicYear->id;
+                }
+
+                $classesList = [
+                    // SMP
+                    '7A', '7B', '7C', '7D', '7E',
+                    '8A', '8B', '8C', '8D', '8E',
+                    '9A', '9B', '9C', '9D', '9E',
+                    // SMA
+                    'X.1', 'X.2', 'X.3',
+                    'XI.1', 'XI.2', 'XI.3',
+                    'XII.1', 'XII.2', 'XII.3',
+                    // SMK
+                    'X PPLG 1', 'X PPLG 2', 'X AKL', 'X MPLB',
+                    'XI PPLG 1', 'XI PPLG 2', 'XI AKL', 'XI MPLB',
+                    'XII PPLG 1', 'XII PPLG 2', 'XII AKL', 'XII OTKP',
+                ];
+
+                foreach ($classesList as $cName) {
+                    DB::table('classes')->insertOrIgnore([
+                        'name' => $cName,
+                        'academic_year_id' => $academicYearId,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
             $q = DB::table('classes');
             if ($search) { $q->where('name', 'like', "%{$search}%"); }
-            $classes = $q->orderBy('name')->paginate(15);
+            $classes = $q->orderBy('id', 'asc')->paginate(15);
         } elseif ($tab == 'jurusan') {
+            // Auto-populate default majors if empty
+            if (DB::table('majors')->count() === 0) {
+                $majorsList = [
+                    'MIPA (Matematika dan Ilmu Pengetahuan Alam)',
+                    'IPS (Ilmu Pengetahuan Sosial)',
+                    'Bahasa dan Budaya',
+                    'PPLG (Pengembangan Perangkat Lunak dan Gim)',
+                    'AKL (Akuntansi dan Keuangan Lembaga)',
+                    'MPLB (Manajemen Perkantoran dan Layanan Bisnis)',
+                    'OTKP (Otomatisasi & Tata Kelola Perkantoran)',
+                    'Umum (SMP)',
+                ];
+
+                foreach ($majorsList as $mName) {
+                    DB::table('majors')->insertOrIgnore([
+                        'name' => $mName,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
             $q = DB::table('majors');
             if ($search) { $q->where('name', 'like', "%{$search}%"); }
-            $majors = $q->orderBy('name')->paginate(15);
+            $majors = $q->orderBy('id', 'asc')->paginate(15);
         }
 
         return view('admin.masterdata.index', compact('tab', 'search', 'authors', 'publishers', 'shelves', 'classes', 'majors'));

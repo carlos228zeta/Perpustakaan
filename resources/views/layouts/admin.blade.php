@@ -297,7 +297,7 @@
             <!-- Page Body -->
             <main class="app-content">
                 @if(session('success'))
-                    <div style="background-color: #E8F5E9; color: var(--primary); border: 1px solid #A5D6A7; padding: 0.85rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem; font-weight: 600; box-shadow: var(--shadow-sm);">
+                    <div style="background-color: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-glow); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem; font-weight: 600; box-shadow: var(--shadow-sm);">
                         <i class="bi bi-check-circle-fill" style="margin-right: 0.5rem;"></i> {{ session('success') }}
                     </div>
                 @endif

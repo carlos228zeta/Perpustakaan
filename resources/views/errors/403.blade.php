@@ -10,9 +10,26 @@
         <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
             Anda tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi petugas perpustakaan jika Anda memerlukan akses.
         </p>
-        <a href="{{ url('/') }}" class="btn-tzuchi btn-primary-tzuchi">
-            <i class="bi bi-house"></i> Kembali ke Beranda
-        </a>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url('/') }}" class="btn-tzuchi btn-secondary-tzuchi">
+                <i class="bi bi-house"></i> Beranda Publik
+            </a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="btn-tzuchi btn-primary-tzuchi">
+                    <i class="bi bi-speedometer2"></i> Buka Dashboard Saya
+                </a>
+                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn-tzuchi" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3);">
+                        <i class="bi bi-box-arrow-right"></i> Ganti Akun (Logout)
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="btn-tzuchi btn-primary-tzuchi">
+                    <i class="bi bi-box-arrow-in-right"></i> Masuk Akun
+                </a>
+            @endauth
+        </div>
     </div>
 </div>
 @endsection

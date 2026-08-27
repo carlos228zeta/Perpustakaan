@@ -12,13 +12,11 @@
                 <div style="font-size: 0.825rem; color: var(--text-muted);">Pilih kategori pengaturan pada tab di bawah ini untuk mengelola konfigurasi sistem secara terpisah.</div>
             </div>
         </div>
-
-
-
         @php
             $activeTab = request('tab', 'sirkulasi');
         @endphp
 
+        <!-- Form section -->
         <form action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="active_tab" value="{{ $activeTab }}">
@@ -60,6 +58,62 @@
                         <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.35rem;">Biaya denda yang otomatis dihitung per hari keterlambatan saat buku dikembalikan.</div>
                     </div>
                 </div>
+
+                <!-- Seksi Pembayaran (Dipindahkan ke Sirkulasi) -->
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.35rem; margin-bottom: 1.5rem; background: var(--surface);">
+                    <h4 style="font-size: 1rem; margin-bottom: 0.35rem; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-qr-code"></i> Pengaturan QRIS
+                    </h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Unggah gambar/foto QR Code standar nasional (QRIS) sekolah.</p>
+
+                    @php
+                        $currentQris = $settings['qris_image'] ?? null;
+                        $qrisDisplay = ($currentQris && file_exists(public_path($currentQris))) ? asset($currentQris) : asset('img/no-image.png');
+                    @endphp
+                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <div style="padding: 0.75rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-align: center;">
+                            <img src="{{ $qrisDisplay }}" alt="Pratinjau QRIS" style="height: 100px; max-width: 140px; object-fit: contain;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.35rem;">QRIS Saat Ini</div>
+                        </div>
+
+                        <div style="flex: 1; min-width: 220px;">
+                            <label class="form-label">Unggah Foto QRIS (PNG / JPG / WebP)</label>
+                            <input type="file" name="qris_image" class="form-control-tzuchi" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.35rem; margin-bottom: 1.5rem; background: var(--surface);">
+                    <h4 style="font-size: 1rem; margin-bottom: 0.35rem; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-bank"></i> Nomor Rekening Bank
+                    </h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Atur nomor rekening tujuan transfer pembayaran denda perpustakaan.</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">No. Rekening BCA</label>
+                            <input type="text" name="bca_account" value="{{ old('bca_account', $settings['bca_account'] ?? '') }}" class="form-control-tzuchi" placeholder="Contoh: 1234567890">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Atas Nama BCA</label>
+                            <input type="text" name="bca_account_name" value="{{ old('bca_account_name', $settings['bca_account_name'] ?? '') }}" class="form-control-tzuchi" placeholder="Contoh: SMA Tzu Chi">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">No. Rekening Mandiri</label>
+                            <input type="text" name="mandiri_account" value="{{ old('mandiri_account', $settings['mandiri_account'] ?? '') }}" class="form-control-tzuchi" placeholder="Contoh: 0987654321">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Atas Nama Mandiri</label>
+                            <input type="text" name="mandiri_account_name" value="{{ old('mandiri_account_name', $settings['mandiri_account_name'] ?? '') }}" class="form-control-tzuchi" placeholder="Contoh: SMA Tzu Chi">
+                        </div>
+                    </div>
+                </div>
+
 
             @elseif($activeTab == 'branding')
                 <!-- Seksi Branding: Logo, Judul, & Warna Utama Aplikasi -->
@@ -103,6 +157,18 @@
                                 <button type="button" onclick="setPresetColor('#E11D48')" title="Rose Pink (Merah Muda)" style="width: 36px; height: 36px; border-radius: 50%; background: #E11D48; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; transition: transform 0.2s;"></button>
                                 <button type="button" onclick="setPresetColor('#0284C7')" title="Sky Blue (Biru Cerah)" style="width: 36px; height: 36px; border-radius: 50%; background: #0284C7; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; transition: transform 0.2s;"></button>
                                 <button type="button" onclick="setPresetColor('#111827')" title="Dark Obsidian (Hitam Modern)" style="width: 36px; height: 36px; border-radius: 50%; background: #111827; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; transition: transform 0.2s;"></button>
+                                
+                                @php
+                                    $customColors = json_decode($settings['custom_theme_colors'] ?? '[]', true);
+                                    if (!is_array($customColors)) $customColors = [];
+                                @endphp
+                                
+                                @if(count($customColors) > 0)
+                                    <div style="width: 1px; height: 36px; background: var(--border-color); margin: 0 0.25rem;"></div>
+                                    @foreach($customColors as $cColor)
+                                        <button type="button" onclick="setPresetColor('{{ $cColor }}')" title="Warna Custom Anda ({{ $cColor }})" style="width: 36px; height: 36px; border-radius: 50%; background: {{ $cColor }}; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.18); cursor: pointer; transition: transform 0.2s;"></button>
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
                     </div>

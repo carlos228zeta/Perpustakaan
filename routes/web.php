@@ -150,14 +150,21 @@ Route::middleware(['auth'])->group(function () {
     // Unified /dashboard redirect route
     Route::get('/dashboard', function() {
         $user = auth()->user();
+        if (!$user->role_id || !$user->role) {
+            $user->load('role');
+        }
+
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         } elseif ($user->hasRole('librarian')) {
             return redirect()->route('librarian.dashboard');
         } elseif ($user->hasRole('teacher')) {
             return redirect()->route('teacher.dashboard');
+        } elseif ($user->hasRole('student')) {
+            return redirect()->route('student.dashboard');
         }
-        return redirect()->route('student.dashboard');
+
+        return redirect()->route('home');
     })->name('dashboard');
 
     // Admin Routes
@@ -188,8 +195,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/denda/laporan', [\App\Http\Controllers\DendaController::class, 'laporanPembayaran'])->name('denda.laporan');
         Route::get('/denda', [\App\Http\Controllers\DendaController::class, 'index'])->name('denda.index');
         Route::post('/denda/{id}/pay', [\App\Http\Controllers\DendaController::class, 'markAsPaid'])->name('denda.pay');
+        Route::post('/denda/{id}/archive', [\App\Http\Controllers\DendaController::class, 'archive'])->name('denda.archive');
+        Route::delete('/denda/bulk-destroy', [\App\Http\Controllers\DendaController::class, 'bulkDestroyPayment'])->name('denda.bulkDestroyPayment');
+        Route::delete('/denda/{id}/destroy', [\App\Http\Controllers\DendaController::class, 'destroyPayment'])->name('denda.destroyPayment');
         
         Route::get('/pengembalian', [PengembalianController::class, 'index'])->name('pengembalian.index');
+        Route::post('/pengembalian/bulk-return', [PengembalianController::class, 'bulkReturn'])->name('pengembalian.bulkReturn');
         Route::post('/pengembalian/{id}', [PengembalianController::class, 'returnBook'])->name('pengembalian.process');
 
         // Master Data Management (Penulis, Penerbit, Rak)

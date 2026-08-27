@@ -22,7 +22,7 @@
                 <p class="text-muted mb-3">{{ $user->email }}</p>
                 
                 <div class="d-flex justify-content-center gap-2">
-                    <span class="badge" style="background-color: #dcfce7; color: #166534; font-weight: 500; font-size: 0.85rem; padding: 8px 16px;">Siswa</span>
+                    <span class="badge" style="background-color: var(--primary-light); color: var(--primary); font-weight: 500; font-size: 0.85rem; padding: 8px 16px;">Siswa</span>
                     <span class="badge bg-light text-dark border" style="font-weight: 500; font-size: 0.85rem; padding: 8px 16px;">Kelas: {{ $user->class_name ?? '-' }}</span>
                 </div>
             </div>

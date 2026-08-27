@@ -197,10 +197,6 @@
         <!-- Sliding 3D Overlay Panel -->
         <div class="auth-overlay-panel" id="authOverlayPanel">
             <div class="auth-overlay-content">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(10px); padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.25); margin: 0 auto;">
-                    <i class="bi bi-book-half"></i> {{ $institutionName }}
-                </div>
-
                 <!-- PROMPT FOR REGISTER (Shown when in Login mode) -->
                 <div class="overlay-prompt-box {{ $initialMode === 'show-login' ? 'active-prompt' : 'inactive-prompt' }}" id="promptRegisterView">
                     <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(74, 222, 128, 0.2); border: 1px solid rgba(74, 222, 128, 0.4); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 2.2rem; color: #4ADE80;">
@@ -229,9 +225,6 @@
                     </button>
                 </div>
 
-                <div style="font-size: 0.775rem; opacity: 0.75; border-top: 1px solid rgba(255, 255, 255, 0.15); padding-top: 1rem;">
-                    &copy; {{ date('Y') }} LMS Tzu Chi — Perpustakaan Cengkareng
-                </div>
             </div>
         </div>
 

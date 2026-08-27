@@ -110,4 +110,84 @@ class PengembalianController extends Controller
 
         return redirect('/admin/pengembalian')->with('success', $msg);
     }
+
+    public function bulkReturn(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (empty($ids) || !is_array($ids)) {
+            return redirect('/admin/pengembalian')->with('error', 'Tidak ada data yang dipilih untuk dikembalikan.');
+        }
+
+        $now = Carbon::now();
+        $totalProcessed = 0;
+        $totalFines = 0;
+
+        DB::transaction(function () use ($ids, $now, &$totalProcessed, &$totalFines) {
+            foreach ($ids as $id) {
+                $borrowing = DB::table('borrowings')->where('id', $id)->first();
+                if (!$borrowing) continue;
+
+                $dueDate = Carbon::parse($borrowing->due_date);
+                $overdueDays = $now->greaterThan($dueDate) ? $now->diffInDays($dueDate) : 0;
+                $fineAmount = $overdueDays * 1000;
+
+                $item = DB::table('borrowing_items')->where('borrowing_id', $id)->first();
+
+                $updateData = [
+                    'status' => 'returned',
+                    'return_date' => $now->format('Y-m-d'),
+                    'updated_at' => $now,
+                ];
+
+                if (Schema::hasColumn('borrowings', 'returned_to')) {
+                    $updateData['returned_to'] = auth()->id();
+                } elseif (Schema::hasColumn('borrowings', 'returned_by')) {
+                    $updateData['returned_by'] = auth()->id();
+                }
+
+                DB::table('borrowings')->where('id', $id)->update($updateData);
+
+                if ($item) {
+                    DB::table('book_copies')->where('id', $item->book_copy_id)->update([
+                        'status' => 'available',
+                        'updated_at' => $now,
+                    ]);
+                }
+
+                if ($overdueDays > 0) {
+                    DB::table('fines')->insert([
+                        'borrowing_id' => $id,
+                        'user_id' => $borrowing->user_id,
+                        'amount' => $fineAmount,
+                        'reason' => "Keterlambatan pengembalian {$overdueDays} hari",
+                        'status' => 'unpaid',
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                    $totalFines += $fineAmount;
+                }
+
+                $totalProcessed++;
+            }
+            
+            if ($totalProcessed > 0) {
+                DB::table('activity_logs')->insert([
+                    'user_id' => auth()->id(),
+                    'activity' => "Memproses pengembalian $totalProcessed buku secara massal" . ($totalFines > 0 ? " (Total denda: Rp " . number_format($totalFines, 0, ',', '.') . ")" : ""),
+                    'module' => 'Pengembalian',
+                    'model_id' => null,
+                    'ip_address' => request()->ip(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        });
+
+        $msg = "$totalProcessed buku berhasil dikembalikan.";
+        if ($totalFines > 0) {
+            $msg .= " Tercatat total denda Rp " . number_format($totalFines, 0, ',', '.') . " dari keterlambatan.";
+        }
+
+        return redirect('/admin/pengembalian')->with('success', $msg);
+    }
 }

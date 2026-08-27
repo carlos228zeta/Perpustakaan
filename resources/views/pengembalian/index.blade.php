@@ -10,6 +10,15 @@
             <h3 style="font-size: 1.1rem; margin-bottom: 0.2rem;">Buku Sedang Dipinjam</h3>
             <div style="font-size: 0.825rem; color: var(--text-muted);">Proses pengembalian buku dan hitung otomatis denda keterlambatan.</div>
         </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="btnBulkReturn" class="btn-tzuchi btn-primary-tzuchi btn-sm" style="display: none;" onclick="submitBulkReturn()">
+                <i class="bi bi-box-arrow-in-left"></i> Kembalikan Terpilih (<span id="selectedCount">0</span>)
+            </button>
+            <form id="bulkReturnForm" action="{{ route('pengembalian.bulkReturn') }}" method="POST" style="display: none;">
+                @csrf
+                <div id="bulkReturnInputs"></div>
+            </form>
+        </div>
     </div>
 
     <!-- Search Form -->
@@ -27,12 +36,13 @@
         <table class="table-tzuchi">
             <thead>
                 <tr>
+                    <th width="5%" style="text-align: center;"><input type="checkbox" id="selectAll" style="cursor: pointer;"></th>
                     <th width="5%">No</th>
                     <th width="20%">Peminjam</th>
                     <th width="25%">Buku & Kode Eksemplar</th>
                     <th width="15%">Tgl Pinjam</th>
                     <th width="15%">Jatuh Tempo</th>
-                    <th width="20%" style="text-align: center;">Aksi</th>
+                    <th width="15%" style="text-align: center;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,6 +53,9 @@
                         $overdueDays = $isOverdue ? \Carbon\Carbon::now()->diffInDays($dueDateObj) : 0;
                     @endphp
                     <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="rowCheckbox" value="{{ $b->id }}" style="cursor: pointer;">
+                        </td>
                         <td>{{ $borrowings->firstItem() + $key }}</td>
                         <td><strong>{{ $b->user_name }}</strong></td>
                         <td>
@@ -71,7 +84,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                             Tidak ada transaksi buku dipinjam saat ini.
                         </td>
                     </tr>
@@ -89,4 +102,72 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.rowCheckbox');
+    const btnBulkReturn = document.getElementById('btnBulkReturn');
+    const selectedCountSpan = document.getElementById('selectedCount');
+
+    function updateBulkReturnBtn() {
+        const checkedCount = document.querySelectorAll('.rowCheckbox:checked').length;
+        if (checkedCount > 0) {
+            btnBulkReturn.style.display = 'inline-flex';
+            selectedCountSpan.textContent = checkedCount;
+        } else {
+            btnBulkReturn.style.display = 'none';
+        }
+        
+        if (selectAll) {
+            selectAll.checked = (checkedCount === rowCheckboxes.length && rowCheckboxes.length > 0);
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+            updateBulkReturnBtn();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkReturnBtn);
+    });
+});
+
+function submitBulkReturn() {
+    const checkedBoxes = document.querySelectorAll('.rowCheckbox:checked');
+    if (checkedBoxes.length === 0) return;
+
+    Swal.fire({
+        title: 'Proses Pengembalian Masal?',
+        text: `Anda akan mengembalikan ${checkedBoxes.length} buku. Denda akan otomatis dihitung jika ada yang terlambat.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: 'var(--primary)',
+        cancelButtonColor: '#94A3B8',
+        confirmButtonText: 'Ya, Kembalikan Semua!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.getElementById('bulkReturnForm');
+            const inputsDiv = document.getElementById('bulkReturnInputs');
+            inputsDiv.innerHTML = '';
+            
+            checkedBoxes.forEach(cb => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = cb.value;
+                inputsDiv.appendChild(input);
+            });
+            
+            form.submit();
+        }
+    });
+}
+</script>
 @endsection
